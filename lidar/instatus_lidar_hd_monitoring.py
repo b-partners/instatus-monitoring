@@ -16,7 +16,7 @@ IGN_LIDAR_BASE_URL = "https://data.geopf.fr/wfs/ows"
 INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
 INSTATUS_PAGE_ID = os.environ["INSTATUS_PAGE_ID"]
 
-def retrieve_teledetection_lidar_url_from_tile(x,y,z):
+def monitor_lidar(x,y,z):
     tile = [x,y,z]
     bbox = mercantile.bounds(*tile)
     minx, miny = bbox[0], bbox[1]
@@ -25,15 +25,19 @@ def retrieve_teledetection_lidar_url_from_tile(x,y,z):
     params = {"bbox": f"{minx},{miny},{maxx},{maxy}"}
 
     response = requests.get(LIDAR_BASE_URL, params=params)
-    print(f"LIDAR-IGN-URL={response.url}")
     data = response.json()
     if "features" in data and len(data["features"]) > 0:
         href = data["features"][0]["assets"]["data"]["href"]
+        print(f"LIDAR-IGN={href}")
         return href
     else:
-        print("Lidar data not found for this area. ")
-        return None
-
+        print("Lidar not found principal url, process lidar retrieval on fallback")
+        url, status_code = retrieve_ign_lidar_from(x,y,z)
+        if status_code != 200:
+            print("Lidar data not found for this area. ")
+            return None
+        print(f"LIDAR-IGN-FALLBACK={url}")
+        return url
 
 def retrieve_ign_lidar_from(x, y, z):
     transformer = Transformer.from_crs("EPSG:4326", "EPSG:2154", always_xy=True)
@@ -58,17 +62,9 @@ def retrieve_ign_lidar_from(x, y, z):
     }
 
     response = requests.get(IGN_LIDAR_BASE_URL, params=params)
-
-    print(f"IGN-URL={response.url}")
-    print(response)
-
-def monitor_lidar(x, y, z,):
-    url = retrieve_teledetection_lidar_url_from_tile(x, y, z)
-
-    if url is not None:
-        return url
-    else:
-        return None
+    status_code = response.status_code
+    print(response.status_code)
+    return response.url, status_code
 
 def instatus_monitoring(s3_bucket, s3_conf_file_key):
     output_path = "lidar/instatus-lidar-datatest.json"
@@ -108,6 +104,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
 
             print(f"=============================================== \n"
                   f"Process monitoring on address={address_tested}")
+
             url = monitor_lidar(x, y, z)
             if url is None:
                 monitoring_failed = True
@@ -206,8 +203,6 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
 if __name__ == '__main__':
     s3_bucket=sys.argv[1]
     s3_conf_file_key=sys.argv[2]
-
     # s3_bucket = "instatus-bucket"
     # s3_conf_file_key = "lidar/instatus-lidar-datatest.json"
     instatus_monitoring(s3_bucket, s3_conf_file_key)
-
