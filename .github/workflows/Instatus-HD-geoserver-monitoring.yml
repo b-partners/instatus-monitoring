@@ -1,0 +1,38 @@
+name: Monitor Geoserver HD layers
+
+on:
+  workflow_dispatch:
+#  schedule:
+#    - cron: '*/15 * * * *'
+
+jobs:
+  monitor-hd-layers:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
+      INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
+      INSTATUS_HD_LAYER_PAGE_ID: ${{ secrets.INSTATUS_HD_LAYER_PAGE_ID }}
+      INSTATUS_BUCKET: "instatus-bucket"
+      S3_KEY: "geoserver/hd/instatus-hd-datatest.json"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd geoserver/hd
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Monitor Geoserver HD layers
+        run: |
+          export PYTHONPATH=$(pwd)
+          python geoserver/hd/monitor_hd_layers.py ${{ env.INSTATUS_BUCKET }} ${{ env.S3_KEY }}
