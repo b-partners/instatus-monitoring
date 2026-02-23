@@ -7,7 +7,7 @@
         "xyz": "528422,382932,20"
     },
     {
-        "address": "15 Rue de la République, 82000 Montauban",
+        "address": "15 Rue de la R\u00e9publique, 82000 Montauban",
         "incidentId": null,
         "layer": "TARN-ET-GARONNE (Montauban)",
         "componentId": "cmly2906r0d9sl071xtf91krg",
@@ -21,16 +21,16 @@
         "xyz": "531138,384446,20"
     },
     {
-        "address": "Pole Sud Immobilier, 103, Boulevard de la Liberté, Béziers, Hérault, Occitania, Metropolitan France, 34500, France",
+        "address": "Pole Sud Immobilier, 103, Boulevard de la Libert\u00e9, B\u00e9ziers, H\u00e9rault, Occitania, Metropolitan France, 34500, France",
         "incidentId": null,
-        "layer": "Herault (Béziers)",
+        "layer": "Herault (B\u00e9ziers)",
         "componentId": "cmly292fk0dejtr0cm3tq8j29",
         "xyz": "533682,383953,20"
     },
     {
-        "address": "Arles, Bouches-du-Rhône, Provence-Alpes-Côte d'Azur, Metropolitan France, 13200, France",
+        "address": "Arles, Bouches-du-Rh\u00f4ne, Provence-Alpes-C\u00f4te d'Azur, Metropolitan France, 13200, France",
         "incidentId": null,
-        "layer": "Arles (Bouches-du-rhônes)",
+        "layer": "Arles (Bouches-du-rh\u00f4nes)",
         "componentId": "cmly293jl0cwk11kc2onj6sjk",
         "xyz": "537757,382890,20"
     },
@@ -63,14 +63,14 @@
         "xyz": "545438,382471,20"
     },
     {
-        "address": "Rue Bernadotte, Quartier du Hédas, Centre Ville, Pau, Pyrénées-Atlantiques, Nouvelle-Aquitaine, Metropolitan France, 64000, France",
-        "incidentId": "cmlyvao8z08aiqq2qqholzmr9",
+        "address": "Rue Bernadotte, Quartier du H\u00e9das, Centre Ville, Pau, Pyr\u00e9n\u00e9es-Atlantiques, Nouvelle-Aquitaine, Metropolitan France, 64000, France",
+        "incidentId": "cmlz5qxe50bwhek89bxllxopp",
         "layer": "Pau",
         "componentId": "cmly298mo0d1rkscou1leky2v",
         "xyz": "523201,384111,20"
     },
     {
-        "address": "8 Avenue du Général de Gaulle, 33520 Bruges",
+        "address": "8 Avenue du G\u00e9n\u00e9ral de Gaulle, 33520 Bruges",
         "incidentId": null,
         "layer": "GIRONDE (Bruges)",
         "componentId": "cmly299e40d1tksco85l0pay8",
@@ -99,7 +99,7 @@
     },
     {
         "address": "4 Chez Brard, 16330 Vars, France",
-        "incidentId": "cmly4la7y0e35iu2mg6dd9uhk",
+        "incidentId": "cmlz5r5dq00fud119dh8pndwo",
         "layer": "CHARENTE Vars)",
         "componentId": "cmly29dqi0d9diu2mwccoltau",
         "xyz": "524765,374065,20"
@@ -119,7 +119,7 @@
         "xyz": "538359,374052,20"
     },
     {
-        "address": "Rte de Radia, 17590 Ars-en-Ré, France",
+        "address": "Rte de Radia, 17590 Ars-en-R\u00e9, France",
         "incidentId": null,
         "layer": "ILE-DE-RE",
         "componentId": "cmly29ggv0dbc4exrc2btk1sp",
@@ -133,7 +133,7 @@
         "xyz": "520837,372369,20"
     },
     {
-        "address": "11 Bd René Lévesque, 85000 La Roche-sur-Yon, France",
+        "address": "11 Bd Ren\u00e9 L\u00e9vesque, 85000 La Roche-sur-Yon, France",
         "incidentId": null,
         "layer": "VENDEE (Roche-sur-Yon)",
         "componentId": "cmly29i910dbg4exryeucv4c7",
@@ -149,7 +149,7 @@
     {
         "address": "XQ5V+GW9, 79100 Saint-Jean-de-Thouars",
         "incidentId": null,
-        "layer": "Deux-Sèvres",
+        "layer": "Deux-S\u00e8vres",
         "componentId": "cmly29kja0d9yl071hmd37pcy",
         "xyz": "523690,368987,20"
     },
@@ -161,21 +161,21 @@
         "xyz": "526320,367152,20"
     },
     {
-        "address": "6 Place de la Libération, 21000 Dijon",
-        "incidentId": "cmly4li9v0e3biu2m7pwmspf0",
+        "address": "6 Place de la Lib\u00e9ration, 21000 Dijon",
+        "incidentId": "cmlz5riti0bajrospq4kmn6x1",
         "layer": "COTE_D_OR_2024 (Dijon)",
         "componentId": "cmly29m4l0dm5ggfhwdzpkjy0",
         "xyz": "538970,367435,20"
     },
     {
         "address": "Voie Express de Vannes \u00e0 Plo\u00ebrmel, Le Varech, Kerglas, Saint-Nolff, Vannes, Morbihan, Brittany, Metropolitan France, 56250, France",
-        "incidentId": "cmly4ljdf0do611kc1wrr1sio",
+        "incidentId": "cmlz5rkyh00cimqyahkwoa15s",
         "layer": "Morbihan",
         "componentId": "cmly29mwl0dc413ix3embv0b1",
         "xyz": "516584,365798,20"
     },
     {
-        "address": "La Cha\u00eene, Châtillon-sur-Seiche, Noyal-Châtillon-sur-Seiche, Rennes, Ille-et-Vilaine, Brittany, Metropolitan France, 35230, France\n\n",
+        "address": "La Cha\u00eene, Ch\u00e2tillon-sur-Seiche, Noyal-Ch\u00e2tillon-sur-Seiche, Rennes, Ille-et-Vilaine, Brittany, Metropolitan France, 35230, France\n\n",
         "incidentId": null,
         "layer": "Rennes",
         "componentId": "cmly29o0c0cwm11kc3v48ei8v",
@@ -197,14 +197,14 @@
     },
     {
         "address": "16 Clo\u00eetre Notre Dame, 28000 Chartres, France",
-        "incidentId": "cmly4lmrl0eawtr0ckxa1jgpn",
+        "incidentId": "cmlz5rqui0c0hk7mapw9rz6w2",
         "layer": "Eur_Et_Loir_Chartres (Chartres)",
         "componentId": "cmly29qcb0czryeim3engsc2n",
         "xyz": "528621,362542,20"
     },
     {
-        "address": "110 Rue de la Duché, 50100 Cherbourg-en-Cotentin, France",
-        "incidentId": "cmly4lny50e9d4exrdszgq9at",
+        "address": "110 Rue de la Duch\u00e9, 50100 Cherbourg-en-Cotentin, France",
+        "incidentId": "cmlz5rvbp0bxtm46wsk8qaqb4",
         "layer": "MANCHE (Cherbourg-en-Cotentin)",
         "componentId": "cmly29r2x0dc613ixlmq5q3sa",
         "xyz": "519529,357258,20"
@@ -259,22 +259,22 @@
         "xyz": "531179,360238,20"
     },
     {
-        "address": "centre commercial Créteil Soleil, 94000 Créteil, France",
+        "address": "centre commercial Cr\u00e9teil Soleil, 94000 Cr\u00e9teil, France",
         "incidentId": null,
-        "layer": "VAL_DE_MARNE (Créteil)",
+        "layer": "VAL_DE_MARNE (Cr\u00e9teil)",
         "componentId": "cmly29yiw0dayckjc8go0fw2n",
         "xyz": "531445,361078,20"
     },
     {
-        "address": "Autoroute des Anglais, Cauroy-lès-Hermonville, Reims, Marne, Grand Est, Metropolitan France, 51220, France",
+        "address": "Autoroute des Anglais, Cauroy-l\u00e8s-Hermonville, Reims, Marne, Grand Est, Metropolitan France, 51220, France",
         "incidentId": null,
         "layer": "MARNES (Reims)",
         "componentId": "cmly29z9i0d00yeim84wy45k2",
         "xyz": "535795,358479,20"
     },
     {
-        "address": "Villers-le-Château, Châlons-en-Champagne, Marne, Grand Est, Metropolitan France, 51510, France",
-        "incidentId": "cmly4lwik0dwmksco3a8rujci",
+        "address": "Villers-le-Ch\u00e2teau, Ch\u00e2lons-en-Champagne, Marne, Grand Est, Metropolitan France, 51510, France",
+        "incidentId": "cmlz5s9y900hpd119zp2wmr8v",
         "layer": "MARNES (Chalons)",
         "componentId": "cmly2a06d0d7mzt5dvks56vjx",
         "xyz": "536719,360283,20"
@@ -301,7 +301,7 @@
         "xyz": "542248,361518,20"
     },
     {
-        "address": "2 Quai des Pêcheurs, 67500 Haguenau, France",
+        "address": "2 Quai des P\u00eacheurs, 67500 Haguenau, France",
         "incidentId": null,
         "layer": "Bas-Rhin (Haguenau)",
         "componentId": "cmly2a3cs0dmbggfhwti4r7vz",
