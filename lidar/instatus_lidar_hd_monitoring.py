@@ -12,12 +12,13 @@ from s3_conf import download_fileconf_from_s3, upload_config
 
 
 LIDAR_BASE_URL = "https://api.stac.teledetection.fr/collections/lidarhd/items"
-IGN_LIDAR_BASE_URL = "https://data.geopf.fr/wfs/ows"
+LIDAR_FALLBACK_BASE_URL = "https://data.geopf.fr/wfs/ows"
 
 INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
 INSTATUS_PAGE_ID = os.environ["INSTATUS_PAGE_ID"]
 
 def monitor_lidar(x,y,z):
+    print("Retrieve lidar download url on principal URL ...")
     tile = [x,y,z]
     bbox = mercantile.bounds(*tile)
     minx, miny = bbox[0], bbox[1]
@@ -32,13 +33,12 @@ def monitor_lidar(x,y,z):
         print(f"LIDAR-IGN={href}")
         return href
     else:
-        print("Lidar not found principal url, process lidar retrieval on fallback")
-        url, status_code = retrieve_ign_lidar_from(x,y,z)
-        if status_code != 200:
-            print("Lidar data not found for this area. ")
-            return None
-        print(f"LIDAR-IGN-FALLBACK={url}")
-        return url
+        print("Lidar not found on principal url, process lidar retrieval on fallback")
+        url = retrieve_ign_lidar_from(x,y,z)
+        if url is not None:
+            return url
+        return None
+
 
 def retrieve_ign_lidar_from(x, y, z):
     transformer = Transformer.from_crs("EPSG:4326", "EPSG:2154", always_xy=True)
@@ -62,10 +62,49 @@ def retrieve_ign_lidar_from(x, y, z):
         "bbox": f"{minx},{miny},{maxx},{maxy}"
     }
 
-    response = requests.get(IGN_LIDAR_BASE_URL, params=params)
-    status_code = response.status_code
-    print(response.status_code)
-    return response.url, status_code
+    response = requests.get(LIDAR_FALLBACK_BASE_URL, params=params)
+    ign_feature_collection = requests.get(response.url).json()
+    features = ign_feature_collection.get("features", [])
+    print(ign_feature_collection)
+    if features:
+        lidar_url = features[0].get("properties", {}).get("url")
+        print(f"LIDAR FALLBACK URL={lidar_url}")
+        return lidar_url
+    return None
+
+def download_first_mb(url, output_path="tmp_lidar.bin", max_bytes=1024*1024, timeout=10):
+    try:
+        if url is None:
+            return False
+        with requests.get(url, stream=True, timeout=timeout) as r:
+            r.raise_for_status()
+
+            downloaded = 0
+
+            with open(output_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if not chunk:
+                        continue
+
+                    remaining = max_bytes - downloaded
+                    if remaining <= 0:
+                        break
+
+                    if len(chunk) > remaining:
+                        f.write(chunk[:remaining])
+                        break
+                    else:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+
+        # Remove file
+        if os.path.exists(output_path):
+            os.remove(output_path)
+
+        return True
+
+    except requests.RequestException as e:
+        return False, f"Error while downloading lidar file : {str(e)}"
 
 def instatus_monitoring(s3_bucket, s3_conf_file_key):
     output_path = "lidar/instatus-lidar-datatest.json"
@@ -108,9 +147,11 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                   f"Process monitoring on address={address_tested}")
 
             url = monitor_lidar(x, y, z)
-            if url is None:
-                monitoring_failed = True
+            is_downloadable = download_first_mb(url)
+            print(f"is_downloadable={is_downloadable}")
 
+            if is_downloadable is False:
+                monitoring_failed = True
 
             current_component_status = components_dict.get(component_id)
 
@@ -195,7 +236,8 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
             # ------------------------------------------------------------
             # CAS 4 : Monitoring OK + Component OPERATIONAL → No action
             # ------------------------------------------------------------
-            print("No action required, Monitoring OK, Component OPERATIONAL.")
+            else:
+                print("No action required, Monitoring OK, Component OPERATIONAL.")
 
         # Save json file and upload to s3 if incident was created / incident was resolved
         if updated:
