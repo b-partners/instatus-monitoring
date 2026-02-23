@@ -1,0 +1,4 @@
+mercantile
+requests
+pyproj
+boto3

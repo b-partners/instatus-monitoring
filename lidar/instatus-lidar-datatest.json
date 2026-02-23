@@ -1,0 +1,310 @@
+[
+    {
+        "address": "2 Rue de Cugnaux, 31300 Toulouse",
+        "incidentId": null,
+        "layer": "HAUTE-GARONNE (Toulouse)",
+        "componentId": "cmly28xnb0d1pkscoboved9nj",
+        "xyz": "528422,382932,20"
+    },
+    {
+        "address": "15 Rue de la République, 82000 Montauban",
+        "incidentId": null,
+        "layer": "TARN-ET-GARONNE (Montauban)",
+        "componentId": "cmly2906r0d9sl071xtf91krg",
+        "xyz": "528236,381218,20"
+    },
+    {
+        "address": "D 6113, Saint-Jacques de la Conte, Montredon, Carcassonne, Aude, Occitania, Metropolitan France, 11000, France",
+        "incidentId": null,
+        "layer": "Carcassonne",
+        "componentId": "cmly291ak0cwi11kc72ffzmq5",
+        "xyz": "531138,384446,20"
+    },
+    {
+        "address": "Pole Sud Immobilier, 103, Boulevard de la Liberté, Béziers, Hérault, Occitania, Metropolitan France, 34500, France",
+        "incidentId": null,
+        "layer": "Herault (Béziers)",
+        "componentId": "cmly292fk0dejtr0cm3tq8j29",
+        "xyz": "533682,383953,20"
+    },
+    {
+        "address": "Arles, Bouches-du-Rhône, Provence-Alpes-Côte d'Azur, Metropolitan France, 13200, France",
+        "incidentId": null,
+        "layer": "Arles (Bouches-du-rhônes)",
+        "componentId": "cmly293jl0cwk11kc2onj6sjk",
+        "xyz": "537757,382890,20"
+    },
+    {
+        "address": "2 Av. de la Condamine, 30650 Saze, France",
+        "incidentId": null,
+        "layer": "Gard (Saze)",
+        "componentId": "cmly294o10d4l138j7bya4fnl",
+        "xyz": "537928,381514,20"
+    },
+    {
+        "address": "43.2530212,5.414941199999999",
+        "incidentId": null,
+        "layer": "Marseille",
+        "componentId": "cmly295uc0d4n138jys9cd71v",
+        "xyz": "540060,384288,20"
+    },
+    {
+        "address": "12 Boulevard de la Croisette, 06400 Cannes",
+        "incidentId": null,
+        "layer": "ALPES-MARITIMES (Cannes)",
+        "componentId": "cmly2971k0dm2ggfhyiwhc44f",
+        "xyz": "544740,383095,20"
+    },
+    {
+        "address": "Toboggan Reine Jeanne, Vernier, La Buffa, Nice, Maritime Alps, Provence-Alpes-C\u00f4te d'Azur, Metropolitan France, 06000, France",
+        "incidentId": null,
+        "layer": "COTE-D-AZUR (Nice)",
+        "componentId": "cmly297wo0d7bzt5dy3cefvuy",
+        "xyz": "545438,382471,20"
+    },
+    {
+        "address": "Rue Bernadotte, Quartier du Hédas, Centre Ville, Pau, Pyrénées-Atlantiques, Nouvelle-Aquitaine, Metropolitan France, 64000, France",
+        "incidentId": "cmly4l6ch0e3bzt5dxyb5ei6b",
+        "layer": "Pau",
+        "componentId": "cmly298mo0d1rkscou1leky2v",
+        "xyz": "523201,384111,20"
+    },
+    {
+        "address": "8 Avenue du Général de Gaulle, 33520 Bruges",
+        "incidentId": null,
+        "layer": "GIRONDE (Bruges)",
+        "componentId": "cmly299e40d1tksco85l0pay8",
+        "xyz": "522490,377716,20"
+    },
+    {
+        "address": "19100 Brive-la-Gaillarde, France",
+        "incidentId": null,
+        "layer": "CORREZE (Brive-la-Gaillarde)",
+        "componentId": "cmly29azj0dbz13ixapubjkfj",
+        "xyz": "528714,376585,20"
+    },
+    {
+        "address": "Salcrus, Coren, Saint-Flour, Cantal, Auvergne-Rh\u00f4ne-Alpes, Metropolitan France, 15100, France",
+        "incidentId": null,
+        "layer": "Auvergne_Rhone_Alpes",
+        "componentId": "cmly29bro0dc113ixr3f2sa85",
+        "xyz": "533381,376792,20"
+    },
+    {
+        "address": "362 Rue Faventines, 26000 Valence, France",
+        "incidentId": null,
+        "layer": "Auvergne_Rhone_Alpes (Valence)",
+        "componentId": "cmly29cpt0db94exr32ghmblz",
+        "xyz": "538596,377561,20"
+    },
+    {
+        "address": "4 Chez Brard, 16330 Vars, France",
+        "incidentId": "cmly4la7y0e35iu2mg6dd9uhk",
+        "layer": "CHARENTE Vars)",
+        "componentId": "cmly29dqi0d9diu2mwccoltau",
+        "xyz": "524765,374065,20"
+    },
+    {
+        "address": "19 Rue Bernard Palissy, 87000 Limoges, France",
+        "incidentId": null,
+        "layer": "Limoges",
+        "componentId": "cmly29ep90d9fiu2mkekanbaw",
+        "xyz": "527935,373738,20"
+    },
+    {
+        "address": "2 Place Bellecour, 69002 Lyon",
+        "incidentId": null,
+        "layer": "RHONE (Lyon)",
+        "componentId": "cmly29ffa0d9wl0712dbicdbh",
+        "xyz": "538359,374052,20"
+    },
+    {
+        "address": "Rte de Radia, 17590 Ars-en-Ré, France",
+        "incidentId": null,
+        "layer": "ILE-DE-RE",
+        "componentId": "cmly29ggv0dbc4exrc2btk1sp",
+        "xyz": "519802,372147,20"
+    },
+    {
+        "address": "158056 / -1.187168, 6 Bd Aristide Rondeau, 17000 La Rochelle, France",
+        "incidentId": null,
+        "layer": "CHARENTE_MARITIME",
+        "componentId": "cmly29h850dbe4exrsl7eibzl",
+        "xyz": "520837,372369,20"
+    },
+    {
+        "address": "11 Bd René Lévesque, 85000 La Roche-sur-Yon, France",
+        "incidentId": null,
+        "layer": "VENDEE (Roche-sur-Yon)",
+        "componentId": "cmly29i910dbg4exryeucv4c7",
+        "xyz": "520168,370267,20"
+    },
+    {
+        "address": "51 Rte de Cugand, 44190 Clisson",
+        "incidentId": null,
+        "layer": "Loire-Atlantique_Clisson_Sevre_Maine (Clisson)",
+        "componentId": "cmly29jrq0czpyeim1ozda53m",
+        "xyz": "520561,368460,20"
+    },
+    {
+        "address": "XQ5V+GW9, 79100 Saint-Jean-de-Thouars",
+        "incidentId": null,
+        "layer": "Deux-Sèvres",
+        "componentId": "cmly29kja0d9yl071hmd37pcy",
+        "xyz": "523690,368987,20"
+    },
+    {
+        "address": "27 Rue \u00c9douard Vaillant, 37000 Tours, France",
+        "incidentId": null,
+        "layer": "INDRE_ET_LOIRE (Tours)",
+        "componentId": "cmly29l7y0d9liu2m1p1x13wa",
+        "xyz": "526320,367152,20"
+    },
+    {
+        "address": "6 Place de la Libération, 21000 Dijon",
+        "incidentId": "cmly4li9v0e3biu2m7pwmspf0",
+        "layer": "COTE_D_OR_2024 (Dijon)",
+        "componentId": "cmly29m4l0dm5ggfhwdzpkjy0",
+        "xyz": "538970,367435,20"
+    },
+    {
+        "address": "Voie Express de Vannes \u00e0 Plo\u00ebrmel, Le Varech, Kerglas, Saint-Nolff, Vannes, Morbihan, Brittany, Metropolitan France, 56250, France",
+        "incidentId": "cmly4ljdf0do611kc1wrr1sio",
+        "layer": "Morbihan",
+        "componentId": "cmly29mwl0dc413ix3embv0b1",
+        "xyz": "516584,365798,20"
+    },
+    {
+        "address": "La Cha\u00eene, Châtillon-sur-Seiche, Noyal-Châtillon-sur-Seiche, Rennes, Ille-et-Vilaine, Brittany, Metropolitan France, 35230, France\n\n",
+        "incidentId": null,
+        "layer": "Rennes",
+        "componentId": "cmly29o0c0cwm11kc3v48ei8v",
+        "xyz": "519348,364226,20"
+    },
+    {
+        "address": "40 Rue Victor Fenoux, 29200 Brest",
+        "incidentId": null,
+        "layer": "FINISTERE (Brest)",
+        "componentId": "cmly29orz0d9piu2m6c2ywonb",
+        "xyz": "511256,362815,20"
+    },
+    {
+        "address": "9GR8+78R Brest, France",
+        "incidentId": null,
+        "layer": "FINISTERE (Brest)",
+        "componentId": "cmly29pm60dbi4exrcd7ejgmy",
+        "xyz": "511226,362792,20"
+    },
+    {
+        "address": "16 Clo\u00eetre Notre Dame, 28000 Chartres, France",
+        "incidentId": "cmly4lmrl0eawtr0ckxa1jgpn",
+        "layer": "Eur_Et_Loir_Chartres (Chartres)",
+        "componentId": "cmly29qcb0czryeim3engsc2n",
+        "xyz": "528621,362542,20"
+    },
+    {
+        "address": "110 Rue de la Duché, 50100 Cherbourg-en-Cotentin, France",
+        "incidentId": "cmly4lny50e9d4exrdszgq9at",
+        "layer": "MANCHE (Cherbourg-en-Cotentin)",
+        "componentId": "cmly29r2x0dc613ixlmq5q3sa",
+        "xyz": "519529,357258,20"
+    },
+    {
+        "address": "Chemin de la Fromagerie, Le Mesnil-Durand, Livarot-Pays-d'Auge, Lisieux, Calvados, Normandy, Metropolitan France, 14140, France",
+        "incidentId": null,
+        "layer": "Ortho_Lisieux_Normandie",
+        "componentId": "cmly29rw10cztyeim11gg57br",
+        "xyz": "524712,359841,20"
+    },
+    {
+        "address": "76000 Rouen, France",
+        "incidentId": null,
+        "layer": "Rouen",
+        "componentId": "cmly29smg0d9riu2mh6iz5ni4",
+        "xyz": "527484,358112,20"
+    },
+    {
+        "address": "8X7C+56P Raye-sur-Authie, France",
+        "incidentId": null,
+        "layer": "Haut-de-france",
+        "componentId": "cmly29u5d0d9tiu2mzpw6sd27",
+        "xyz": "530027,354196,20"
+    },
+    {
+        "address": "3FC7+H9J Honnechy, France",
+        "incidentId": null,
+        "layer": "Haut-de-france",
+        "componentId": "cmly29vdt0dbo4exrn5gvwuxh",
+        "xyz": "534375,355295,20"
+    },
+    {
+        "address": "14 Rue Soleillet, 75020 Paris",
+        "incidentId": null,
+        "layer": "PARIS",
+        "componentId": "cmly29w4p0cwp11kccotetww6",
+        "xyz": "531254,360700,20"
+    },
+    {
+        "address": "11 Avenue du Colonel Fabien 2c 9319, Livry-Gargan, France",
+        "incidentId": null,
+        "layer": "Seine-Saint-Denis",
+        "componentId": "cmly29wwp0czwyeim7umeii1a",
+        "xyz": "531603,360484,20"
+    },
+    {
+        "address": "106 Bd Jean Mermoz, 93380 Saint-Denis, France",
+        "incidentId": null,
+        "layer": "Seine-Saint-Denis",
+        "componentId": "cmly29xmw0dawckjcjpnma923",
+        "xyz": "531179,360238,20"
+    },
+    {
+        "address": "centre commercial Créteil Soleil, 94000 Créteil, France",
+        "incidentId": null,
+        "layer": "VAL_DE_MARNE (Créteil)",
+        "componentId": "cmly29yiw0dayckjc8go0fw2n",
+        "xyz": "531445,361078,20"
+    },
+    {
+        "address": "Autoroute des Anglais, Cauroy-lès-Hermonville, Reims, Marne, Grand Est, Metropolitan France, 51220, France",
+        "incidentId": null,
+        "layer": "MARNES (Reims)",
+        "componentId": "cmly29z9i0d00yeim84wy45k2",
+        "xyz": "535795,358479,20"
+    },
+    {
+        "address": "Villers-le-Château, Châlons-en-Champagne, Marne, Grand Est, Metropolitan France, 51510, France",
+        "incidentId": "cmly4lwik0dwmksco3a8rujci",
+        "layer": "MARNES (Chalons)",
+        "componentId": "cmly2a06d0d7mzt5dvks56vjx",
+        "xyz": "536719,360283,20"
+    },
+    {
+        "address": "8 Rue des Landes, 57100 Thionville, France",
+        "incidentId": null,
+        "layer": "Thionville",
+        "componentId": "cmly2a0xv0dm9ggfhtfhne9md",
+        "xyz": "542080,358513,20"
+    },
+    {
+        "address": "79 Rue Mazelle, 57000 Metz",
+        "incidentId": null,
+        "layer": "MOSELLE_METZ_METROPOLE (Metz)",
+        "componentId": "cmly2a1tq0dbq4exrttjg5vft",
+        "xyz": "542299,359591,20"
+    },
+    {
+        "address": "38 Rue Sergent Blandan, 54000 Nancy, France",
+        "incidentId": null,
+        "layer": "Meurthe-et-moselle_Grand-Nancy (Nancy)",
+        "componentId": "cmly2a2lv0d24ksco25ioyitj",
+        "xyz": "542248,361518,20"
+    },
+    {
+        "address": "2 Quai des Pêcheurs, 67500 Haguenau, France",
+        "incidentId": null,
+        "layer": "Bas-Rhin (Haguenau)",
+        "componentId": "cmly2a3cs0dmbggfhwti4r7vz",
+        "xyz": "546992,360926,20"
+    }
+]

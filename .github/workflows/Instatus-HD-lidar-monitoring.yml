@@ -1,0 +1,37 @@
+name: Lidar Monitoring
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  monitor-HD-lidar:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
+      INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
+      INSTATUS_PAGE_ID: ${{ secrets.INSTATUS_LIDAR_HD_PAGE_ID }}
+      INSTATUS_BUCKET: "instatus-bucket"
+      S3_KEY: "lidar/instatus-lidar-datatest.json"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd lidar
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Monitor Lidar
+        run: |
+          export PYTHONPATH=$(pwd)
+          python lidar/instatus_lidar_hd_monitoring.py ${{ env.INSTATUS_BUCKET }} ${{ env.S3_KEY }}
