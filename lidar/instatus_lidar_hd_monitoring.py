@@ -1,7 +1,8 @@
+from datetime import datetime, timezone
 import json
 import os
 import sys
-import time
+
 
 import requests
 import mercantile
@@ -82,6 +83,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
         session.headers.update(authorization_headers)
 
         # Retrieve all components statuses
+        print("Retrieve all component statuses ...")
         response = session.get(f"{base_url_v2}/components?page=1&per_page=50")
         response.raise_for_status()
         components_status = response.json()
@@ -128,10 +130,10 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                     "components": [component_id],
                     "status": "INVESTIGATING",
                     "notify": True,
-                     "statuses": {
+                     "statuses": [{
                         "id": component_id,
                         "status": "PARTIALOUTAGE"
-                    }
+                    }]
                 }
 
                 incident_response = session.post(
@@ -159,22 +161,24 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
 
                 resolve_body = {
                     "message": f"Lidar available on address={address_tested}",
-                    "started": time.time(),
+                    "started": datetime.now(timezone.utc).isoformat(),
                     "components": [component_id],
                     "status": "RESOLVED",
                     "impact": "NONE",
                     "notify": True,
-                    "statuses": {
+                    "statuses": [{
                         "id": component_id,
                         "status": "OPERATIONAL"
-                    }
+                    }]
                 }
 
+                # CREATE INCENDETION RESOLUTION
                 session.put(
                     f"{base_url_v1}/incidents/{incident_id}",
                     json=resolve_body,
                 ).raise_for_status()
 
+                # UPDATE COMPONENT STATUS TO OPERATIONAL
                 session.put(
                     f"{base_url_v2}/components/{component_id}",
                     json={
@@ -183,7 +187,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                     },
                 ).raise_for_status()
 
-                address["incidentId"] = ""
+                address["incidentId"] = None
                 updated = True
 
                 print("Incident resolved ...")
