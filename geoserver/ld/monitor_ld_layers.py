@@ -3,15 +3,16 @@ import sys
 
 import requests
 import json
+
 from datetime import datetime, timezone
 
 from geoserver.is_image_corrupted import is_server_returning_incorrect_image
 from lidar.s3_conf import download_fileconf_from_s3, upload_config
 
 INSTATUS_API_KEY=os.environ["INSTATUS_API_KEY"]
-INSTATUS_HD_LAYER_PAGE_ID=os.environ["INSTATUS_HD_LAYER_PAGE_ID"]
-INSTATUS_BASE_URL_V1=f"https://api.instatus.com/v1/{INSTATUS_HD_LAYER_PAGE_ID}"
-INSTATUS_BASE_URL_V2=f"https://api.instatus.com/v2/{INSTATUS_HD_LAYER_PAGE_ID}"
+INSTATUS_LD_LAYER_PAGE_ID=os.environ["INSTATUS_LD_LAYER_PAGE_ID"]
+INSTATUS_BASE_URL_V1=f"https://api.instatus.com/v1/{INSTATUS_LD_LAYER_PAGE_ID}"
+INSTATUS_BASE_URL_V2=f"https://api.instatus.com/v2/{INSTATUS_LD_LAYER_PAGE_ID}"
 
 authorization_headers = {
         "Authorization": f"Bearer {INSTATUS_API_KEY}",
@@ -79,7 +80,7 @@ def fetch_instatus_components_statuses():
     components_dict = {c["id"]: c["status"] for c in components_status}
     return components_dict
 
-def instatus_hd_layers_monitoring(testdata_file):
+def instatus_ld_layers_monitoring(testdata_file):
     components_statuses = fetch_instatus_components_statuses()
     with open(testdata_file, "r") as f:
         data = json.load(f)
@@ -112,7 +113,7 @@ def instatus_hd_layers_monitoring(testdata_file):
         if current_component_status == "OPERATIONAL" and monitoring_failed:
             print(f"[CREATE] Incident for {address}")
             new_incident = create_instatus_incident(layer, component_id)
-            item["incident_id"] = new_incident
+            item["incidentId"] = new_incident
             updated = True
 
         # ------------------------------------------------------------
@@ -135,20 +136,20 @@ def instatus_hd_layers_monitoring(testdata_file):
 
         if updated:
             with open(testdata_file, "w") as f:
-              json.dump(data, f, indent=2)
+                json.dump(data, f, indent=2)
 
     return updated, testdata_file
 
-def monitor_hd_layers(s3_bucket, s3_conf_file_key):
+def monitor_ld_layers(s3_bucket, s3_conf_file_key):
     output_path = s3_conf_file_key
     download_fileconf_from_s3(s3_bucket, s3_conf_file_key, output_path)
-    is_updated, testdata_file= instatus_hd_layers_monitoring(output_path)
+    is_updated, testdata_file= instatus_ld_layers_monitoring(output_path)
 
     if is_updated:
         upload_config(s3_bucket, s3_conf_file_key, testdata_file)
 
 if __name__ == '__main__':
-    monitor_hd_layers(sys.argv[1], sys.argv[2])
+    monitor_ld_layers(sys.argv[1], sys.argv[2])
 
 
 
