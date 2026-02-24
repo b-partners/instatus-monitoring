@@ -5,8 +5,10 @@ import cv2
 import requests
 import json
 import numpy as np
-
+import pytesseract
 from datetime import datetime, timezone
+
+from PIL import Image
 
 from lidar.s3_conf import download_fileconf_from_s3, upload_config
 
@@ -27,6 +29,24 @@ def is_img_blank_or_black(img):
         return True
     return None
 
+def image_contains_failed_text(img):
+    failed_keywords = ("failed", "wmts")
+
+    # Si image PIL
+    if isinstance(img, Image.Image):
+        gray = img.convert("L")
+    # Si image OpenCV (numpy array)
+    elif isinstance(img, np.ndarray):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        # Format d'image non supporté
+        return True
+
+    custom_config = r'--oem 3 --psm 6'
+    try_text = pytesseract.image_to_string(gray, config=custom_config)
+    txt_norm = try_text.lower()
+    return any(k in txt_norm for k in failed_keywords)
+
 def is_server_returning_incorrect_image(url):
     server_response = requests.get(url)
 
@@ -36,7 +56,12 @@ def is_server_returning_incorrect_image(url):
     image_array = np.asarray(bytearray(server_response.content), dtype=np.uint8)
     image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
+    if image_contains_failed_text(image):
+        print("Image contains failed text")
+        return True
+
     if is_img_blank_or_black(image):
+        print("Image is blank or black")
         return True
 
 def create_instatus_incident(layer, component_id):
@@ -137,7 +162,7 @@ def instatus_hd_layers_monitoring(testdata_file):
         if current_component_status == "OPERATIONAL" and monitoring_failed:
             print(f"[CREATE] Incident for {address}")
             new_incident = create_instatus_incident(layer, component_id)
-            incident_id = new_incident
+            item["incident_id"] = new_incident
             updated = True
 
         # ------------------------------------------------------------
@@ -152,24 +177,25 @@ def instatus_hd_layers_monitoring(testdata_file):
         elif current_component_status == "PARTIALOUTAGE" and not monitoring_failed and incident_id:
             print(f"[RESOLVE] Incident {incident_id}")
             resolve_incident_and_update_component_status(layer, component_id, incident_id)
-            address["incidentId"] = None
+            item["incident_id"] = None
             updated = True
 
         else:
             print("No action required, Monitoring OK, Component OPERATIONAL.")
 
-    return updated, data
+        if updated:
+            with open(testdata_file, "w") as f:
+              json.dump(data, f, indent=2)
+
+    return updated, testdata_file
 
 def monitor_hd_layers(s3_bucket, s3_conf_file_key):
     output_path = s3_conf_file_key
     download_fileconf_from_s3(s3_bucket, s3_conf_file_key, output_path)
-    is_updated, data= instatus_hd_layers_monitoring(output_path)
+    is_updated, testdata_file= instatus_hd_layers_monitoring(output_path)
 
     if is_updated:
-        print("Update datatest on s3")
-        with open(output_path, "w") as f:
-            json.dump(data, f, indent=4)
-        upload_config(s3_bucket, s3_conf_file_key, output_path)
+        upload_config(s3_bucket, s3_conf_file_key, testdata_file)
 
 if __name__ == '__main__':
     monitor_hd_layers(sys.argv[1], sys.argv[2])
