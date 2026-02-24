@@ -173,7 +173,7 @@ def instatus_hd_layers_monitoring(testdata_file):
         elif current_component_status == "PARTIALOUTAGE" and not monitoring_failed and incident_id:
             print(f"[RESOLVE] Incident {incident_id}")
             resolve_incident_and_update_component_status(layer, component_id, incident_id)
-            item["incident_id"] = None
+            item["incidentId"] = None
             updated = True
 
         else:
