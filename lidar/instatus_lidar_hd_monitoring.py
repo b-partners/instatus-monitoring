@@ -138,6 +138,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
         for address in data:
             monitoring_failed = False
 
+            layer = address["layer"]
             x, y, z = map(int, address["xyz"].split(","))
             component_id = address["componentId"]
             address_tested = address["address"]
@@ -201,6 +202,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                 print(f"[RESOLVE] Incident {incident_id}")
 
                 resolve_body = {
+                    "name": f"Lidar is available on {layer}",
                     "message": f"Lidar available on address={address_tested}",
                     "started": datetime.now(timezone.utc).isoformat(),
                     "components": [component_id],

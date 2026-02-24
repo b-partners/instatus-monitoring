@@ -69,7 +69,8 @@ def resolve_incident_and_update_component_status(layer, component_id, incident_i
     with requests.Session() as session:
         session.headers.update(authorization_headers)
         resolve_body = {
-            "message": f"Layer available: {layer}",
+            "name": f"Layer available: {layer}",
+            "message": f"Layer {layer} is currently available",
             "started": datetime.now(timezone.utc).isoformat(),
             "components": [component_id],
             "status": "RESOLVED",
