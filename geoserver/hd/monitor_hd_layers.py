@@ -100,11 +100,7 @@ def resolve_incident_and_update_component_status(layer, component_id, incident_i
             "components": [component_id],
             "status": "RESOLVED",
             "impact": "NONE",
-            "notify": True,
-            "statuses": [{
-                "id": component_id,
-                "status": "OPERATIONAL"
-            }]
+            "notify": True
         }
 
         # RESOLVE INCIDENT

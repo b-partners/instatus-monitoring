@@ -208,11 +208,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                     "components": [component_id],
                     "status": "RESOLVED",
                     "impact": "NONE",
-                    "notify": True,
-                    "statuses": [{
-                        "id": component_id,
-                        "status": "OPERATIONAL"
-                    }]
+                    "notify": True
                 }
 
                 # CREATE INCENDETION RESOLUTION
