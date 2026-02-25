@@ -17,28 +17,32 @@ LIDAR_FALLBACK_BASE_URL = "https://data.geopf.fr/wfs/ows"
 INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
 INSTATUS_PAGE_ID = os.environ["INSTATUS_PAGE_ID"]
 
-def monitor_lidar(x,y,z):
+def monitor_lidar(x, y, z):
     print("Retrieve lidar download url on principal URL ...")
-    tile = [x,y,z]
-    bbox = mercantile.bounds(*tile)
-    minx, miny = bbox[0], bbox[1]
-    maxx, maxy = bbox[2], bbox[3]
+    try:
+        tile = [x, y, z]
+        bbox = mercantile.bounds(*tile)
+        minx, miny = bbox[0], bbox[1]
+        maxx, maxy = bbox[2], bbox[3]
+        params = {"bbox": f"{minx},{miny},{maxx},{maxy}"}
 
-    params = {"bbox": f"{minx},{miny},{maxx},{maxy}"}
+        print("Calling:", LIDAR_BASE_URL)
+        response = requests.get(LIDAR_BASE_URL, params=params, timeout=10)
+        print("HTTP Status:", response.status_code)
+        response.raise_for_status()
+        data = response.json()
 
-    response = requests.get(LIDAR_BASE_URL, params=params)
-    data = response.json()
-    if "features" in data and len(data["features"]) > 0:
-        href = data["features"][0]["assets"]["data"]["href"]
-        print(f"LIDAR-IGN={href}")
-        return href
-    else:
-        print("Lidar not found on principal url, process lidar retrieval on fallback")
-        url = retrieve_ign_lidar_from(x,y,z)
-        if url is not None:
-            return url
-        return None
+        if "features" in data and len(data["features"]) > 0:
+            href = data["features"][0]["assets"]["data"]["href"]
+            print(f"LIDAR-IGN={href}")
+            return href
 
+    except requests.exceptions.RequestException as e:
+        print("Principal URL failed:", type(e).__name__, e)
+
+    print("Lidar not found on principal url, process fallback")
+
+    return retrieve_ign_lidar_from(x, y, z)
 
 def retrieve_ign_lidar_from(x, y, z):
     transformer = Transformer.from_crs("EPSG:4326", "EPSG:2154", always_xy=True)
