@@ -76,7 +76,7 @@ def retrieve_ign_lidar_from(x, y, z):
         return lidar_url
     return None
 
-def download_first_mb(url, output_path="tmp_lidar.bin", max_bytes=1024*1024, timeout=10):
+def download_first_mb(url, output_path="tmp_lidar.bin", max_bytes=1024*1024, timeout=120):
     try:
         if url is None:
             return False
