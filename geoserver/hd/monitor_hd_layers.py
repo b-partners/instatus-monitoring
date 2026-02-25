@@ -112,7 +112,7 @@ def instatus_hd_layers_monitoring(testdata_file):
         if current_component_status == "OPERATIONAL" and monitoring_failed:
             print(f"[CREATE] Incident for {address}")
             new_incident = create_instatus_incident(layer, component_id)
-            item["incident_id"] = new_incident
+            item["incidentId"] = new_incident
             updated = True
 
         # ------------------------------------------------------------
