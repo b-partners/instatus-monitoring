@@ -104,7 +104,8 @@ def download_first_mb(url, output_path="tmp_lidar.bin", max_bytes=1024*1024, tim
         return True
 
     except requests.RequestException as e:
-        return False, f"Error while downloading lidar file : {str(e)}"
+        print(f"Error while downloading lidar file : {str(e)}")
+        return False
 
 def instatus_monitoring(s3_bucket, s3_conf_file_key):
     output_path = "lidar/instatus-lidar-datatest.json"
