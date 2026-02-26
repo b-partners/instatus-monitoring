@@ -28,11 +28,7 @@ def create_instatus_incident(layer, component_id):
             "message": f"Layer {layer} is not returning valid image",
             "components": [component_id],
             "status": "INVESTIGATING",
-            "notify": True,
-            "statuses": [{
-                "id": component_id,
-                "status": "PARTIALOUTAGE"
-            }]
+            "notify": True
         }
 
         incident_response = session.post(
@@ -40,6 +36,15 @@ def create_instatus_incident(layer, component_id):
             json=incident_body,
         )
         incident_response.raise_for_status()
+
+        # UPDATE COMPONENT STATUS TO PARTIAL OUTAGE
+        session.put(
+            f"{INSTATUS_BASE_URL_V2}/components/{component_id}",
+            json={
+                "description": f"Layer {layer} is unavailable on this area",
+                "status": "PARTIALOUTAGE",
+            },
+        ).raise_for_status()
 
         new_incident_id = incident_response.json()["id"]
         print(f"Incident created, incident_id={new_incident_id}")
@@ -54,7 +59,6 @@ def resolve_incident_and_update_component_status(layer, component_id, incident_i
             "started": datetime.now(timezone.utc).isoformat(),
             "components": [component_id],
             "status": "RESOLVED",
-            "impact": "NONE",
             "notify": True
         }
 
