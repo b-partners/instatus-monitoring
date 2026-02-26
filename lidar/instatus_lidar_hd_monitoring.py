@@ -176,11 +176,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                     "message": "Lidar link is not available",
                     "components": [component_id],
                     "status": "INVESTIGATING",
-                    "notify": True,
-                     "statuses": [{
-                        "id": component_id,
-                        "status": "PARTIALOUTAGE"
-                    }]
+                    "notify": True
                 }
 
                 incident_response = session.post(
@@ -188,6 +184,15 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                     json=incident_body,
                 )
                 incident_response.raise_for_status()
+
+                # UPDATE COMPONENT STATUS TO PARTIAL OUTAGE
+                session.put(
+                    f"{base_url_v2}/components/{component_id}",
+                    json={
+                        "description": "Lidar is unavailable on this area",
+                        "status": "PARTIALOUTAGE",
+                    },
+                ).raise_for_status()
 
                 new_incident_id = incident_response.json()["id"]
                 address["incidentId"] = new_incident_id
@@ -207,12 +212,11 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                 print(f"[RESOLVE] Incident {incident_id}")
 
                 resolve_body = {
-                    "name": f"Lidar is available on {layer}",
+                    "name": f"Lidar available on {layer}",
                     "message": f"Lidar available on address={address_tested}",
                     "started": datetime.now(timezone.utc).isoformat(),
                     "components": [component_id],
                     "status": "RESOLVED",
-                    "impact": "NONE",
                     "notify": True
                 }
 
