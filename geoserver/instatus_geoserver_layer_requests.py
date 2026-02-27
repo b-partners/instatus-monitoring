@@ -22,7 +22,13 @@ def create_instatus_incident(layer, component_id, INSTATUS_PAGE_ID):
             "message": f"Layer {layer} is not returning valid image",
             "components": [component_id],
             "status": "INVESTIGATING",
-            "notify": True
+            "notify": True,
+            "statuses": [
+                {
+                    "id": component_id,
+                    "status": "PARTIALOUTAGE"
+                }
+            ]
         }
 
         # CREATE INCIDENT
@@ -32,15 +38,6 @@ def create_instatus_incident(layer, component_id, INSTATUS_PAGE_ID):
         )
         incident_response.raise_for_status()
 
-        # UPDATE COMPONENT STATUS TO PARTIAL OUTAGE
-        session.put(
-            f"{INSTATUS_BASE_URL_V2}/{INSTATUS_PAGE_ID}/components/{component_id}",
-            json={
-                "description": f"Layer {layer} is unavailable on this area",
-                "status": "PARTIALOUTAGE",
-            },
-        ).raise_for_status()
-
         new_incident_id = incident_response.json()["id"]
         print(f"Incident created, incident_id={new_incident_id}")
         return new_incident_id
@@ -49,28 +46,25 @@ def resolve_incident_and_update_component_status(layer, component_id, incident_i
     with requests.Session() as session:
         session.headers.update(authorization_headers)
         resolve_body = {
-            "name": f"Layer available: {layer}",
             "message": f"Layer {layer} is currently available",
             "started": datetime.now(timezone.utc).isoformat(),
             "components": [component_id],
             "status": "RESOLVED",
-            "notify": True
+            "notify": True,
+            "statuses": [
+                {
+                    "id": component_id,
+                    "status": "OPERATIONAL"
+                }
+            ]
         }
 
         # RESOLVE INCIDENT
-        session.put(
-            f"{INSTATUS_BASE_URL_V1}/{INSTATUS_PAGE_ID}/incidents/{incident_id}",
+        session.post(
+            f"{INSTATUS_BASE_URL_V1}/{INSTATUS_PAGE_ID}/incidents/{incident_id}/incident-updates",
             json=resolve_body,
         ).raise_for_status()
 
-        # UPDATE COMPONENT STATUS TO OPERATIONAL
-        session.put(
-            f"{INSTATUS_BASE_URL_V2}/{INSTATUS_PAGE_ID}/components/{component_id}",
-            json={
-                "description": f"Layer {layer} is available",
-                "status": "OPERATIONAL",
-            },
-        ).raise_for_status()
         print("Incident resolved ...")
 
 def fetch_instatus_components_statuses(INSTATUS_PAGE_ID):
