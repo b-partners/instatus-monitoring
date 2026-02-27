@@ -160,6 +160,7 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                 monitoring_failed = True
 
             current_component_status = components_dict.get(component_id)
+            print(f"Current component status={current_component_status}")
 
             if not current_component_status:
                 print(f"Component {component_id} not found")
