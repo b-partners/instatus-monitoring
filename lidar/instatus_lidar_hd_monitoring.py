@@ -8,6 +8,7 @@ import requests
 import mercantile
 from pyproj import Transformer
 
+from address_converter import convert_address_to_lat_lon, convert_lat_lon_to_xyz_coordinates
 from s3_conf import download_fileconf_from_s3, upload_config
 
 
@@ -142,9 +143,14 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
 
         for address in data:
             monitoring_failed = False
-
             layer = address["layer"]
-            x, y, z = map(int, address["xyz"].split(","))
+
+            if address.get("xyz"):
+                x, y, z = map(int, address["xyz"].split(","))
+            else:
+                lat, lon = convert_address_to_lat_lon(address)
+                x, y, z = convert_lat_lon_to_xyz_coordinates(lat, lon, 20)
+
             component_id = address["componentId"]
             address_tested = address["address"]
             incident_id = address.get("incidentId", "")
