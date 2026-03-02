@@ -3,9 +3,10 @@ import sys
 
 import json
 
+from geoserver.hd.monitor_hd_layers import monitor_geoserver_layer
 from geoserver.instatus_geoserver_layer_requests import fetch_instatus_components_statuses, create_instatus_incident, \
     resolve_incident_and_update_component_status
-from geoserver.is_image_corrupted import is_server_returning_incorrect_image
+
 from lidar.s3_conf import download_fileconf_from_s3, upload_config
 
 INSTATUS_LD_LAYER_PAGE_ID=os.environ["INSTATUS_LD_LAYER_PAGE_ID"]
@@ -18,8 +19,6 @@ def instatus_ld_layers_monitoring(testdata_file):
     updated = False
 
     for item in data:
-        monitoring_failed = False
-        url = item["url"]
         component_id = item["componentId"]
         address = item["address"]
         incident_id = item["incidentId"]
@@ -28,8 +27,7 @@ def instatus_ld_layers_monitoring(testdata_file):
         print(f"====================================================================== \n"
               f"Process monitoring on address={address}")
 
-        if is_server_returning_incorrect_image(url):
-            monitoring_failed = True
+        monitoring_failed, processing_time = monitor_geoserver_layer(address, "FLUX_IGN_2023_20CM")
 
         current_component_status = components_statuses.get(component_id)
 
@@ -42,7 +40,7 @@ def instatus_ld_layers_monitoring(testdata_file):
         # ----------------------------------------------------------------
         if current_component_status == "OPERATIONAL" and monitoring_failed:
             print(f"[CREATE] Incident for {address}")
-            new_incident = create_instatus_incident(layer, component_id, INSTATUS_LD_LAYER_PAGE_ID)
+            new_incident = create_instatus_incident(layer, component_id, processing_time, INSTATUS_LD_LAYER_PAGE_ID)
             item["incidentId"] = new_incident
             updated = True
 
@@ -57,7 +55,7 @@ def instatus_ld_layers_monitoring(testdata_file):
         # ------------------------------------------------------------
         elif current_component_status == "PARTIALOUTAGE" and not monitoring_failed and incident_id:
             print(f"[RESOLVE] Incident {incident_id}")
-            resolve_incident_and_update_component_status(layer, component_id, incident_id, INSTATUS_LD_LAYER_PAGE_ID)
+            resolve_incident_and_update_component_status(layer, component_id, processing_time, incident_id, INSTATUS_LD_LAYER_PAGE_ID)
             item["incidentId"] = None
             updated = True
 

@@ -2,16 +2,21 @@ import numpy as np
 from PIL import Image
 import cv2
 import pytesseract
-import requests
 
-def is_server_returning_incorrect_image(url):
-    server_response = requests.get(url)
+from address_converter import convert_address_to_lat_lon, convert_lat_lon_to_xyz_coordinates
+from geoserver.TileDownloader import TileDownloader
 
-    if server_response.status_code != 200:
+
+def retrieve_image_from_address(address, layer):
+    lat, lon = convert_address_to_lat_lon(address)
+    x,y,z = convert_lat_lon_to_xyz_coordinates(lat, lon, 20)
+    tile_downloader  = TileDownloader()
+    image, processing_time, url = tile_downloader.download(x, y, z, "geoserver", layer)
+    return image, processing_time, url
+
+def is_server_returning_incorrect_image(image):
+    if image is None:
         return True
-
-    image_array = np.asarray(bytearray(server_response.content), dtype=np.uint8)
-    image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
     if image_contains_failed_text(image):
         print("Image contains failed text")
@@ -20,6 +25,8 @@ def is_server_returning_incorrect_image(url):
     if is_img_blank_or_black(image):
         print("Image is blank or black")
         return True
+
+    return False
 
 def is_img_blank_or_black(img):
     if img is None:

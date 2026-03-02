@@ -4,3 +4,5 @@ boto3
 requests
 Pillow
 pytesseract
+pyproj
+mercantile

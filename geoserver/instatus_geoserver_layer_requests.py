@@ -13,13 +13,13 @@ authorization_headers = {
         "Content-Type": "application/json",
     }
 
-def create_instatus_incident(layer, component_id, INSTATUS_PAGE_ID):
+def create_instatus_incident(layer, component_id, processing_time, INSTATUS_PAGE_ID):
     with requests.Session() as session:
         session.headers.update(authorization_headers)
 
         incident_body = {
             "name": f"Layer unavailable: {layer}",
-            "message": f"Layer {layer} is not returning valid image",
+            "message": f"Layer {layer} is not returning valid image, processed in {processing_time} seconds",
             "components": [component_id],
             "status": "INVESTIGATING",
             "notify": True,
@@ -42,11 +42,11 @@ def create_instatus_incident(layer, component_id, INSTATUS_PAGE_ID):
         print(f"Incident created, incident_id={new_incident_id}")
         return new_incident_id
 
-def resolve_incident_and_update_component_status(layer, component_id, incident_id, INSTATUS_PAGE_ID):
+def resolve_incident_and_update_component_status(layer, component_id, processing_time, incident_id, INSTATUS_PAGE_ID):
     with requests.Session() as session:
         session.headers.update(authorization_headers)
         resolve_body = {
-            "message": f"Layer {layer} is currently available",
+            "message": f"Layer {layer} is currently available, processed in {processing_time} seconds",
             "started": datetime.now(timezone.utc).isoformat(),
             "components": [component_id],
             "status": "RESOLVED",
