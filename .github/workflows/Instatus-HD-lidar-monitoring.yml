@@ -14,6 +14,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
       INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
       INSTATUS_PAGE_ID: ${{ secrets.INSTATUS_LIDAR_HD_PAGE_ID }}
+      GOOGLE_API_KEY: ${{secrets.GOOGLE_GEOCODE_API_KEY}}
       INSTATUS_BUCKET: "instatus-bucket"
       S3_KEY: "lidar/instatus-lidar-datatest.json"
     steps:

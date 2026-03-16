@@ -14,6 +14,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
       INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
       INSTATUS_HD_LAYER_PAGE_ID: ${{ secrets.INSTATUS_HD_LAYER_PAGE_ID }}
+      GOOGLE_API_KEY: ${{secrets.GOOGLE_GEOCODE_API_KEY}}
       INSTATUS_BUCKET: "instatus-bucket"
       S3_KEY: "geoserver/hd/instatus-hd-datatest.json"
 
@@ -28,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd geoserver/hd
+          cd geoserver
           pip install --upgrade pip
           pip install -r requirements.txt
           sudo apt-get update
