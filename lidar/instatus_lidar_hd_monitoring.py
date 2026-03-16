@@ -111,6 +111,42 @@ def download_first_mb(url, output_path="tmp_lidar.bin", max_bytes=1024*1024, tim
         print(f"Error while downloading lidar file : {str(e)}")
         return False
 
+
+def fetch_active_incidents(session, base_url_v1):
+    """
+    Récupère tous les incidents actifs (non résolus) et retourne
+    un dict { component_id: incident_id } pour les composants affectés.
+    """
+    print("Fetching active incidents from Instatus ...")
+    active_incident_map = {}
+
+    page = 1
+    while True:
+        response = session.get(
+            f"{base_url_v1}/incidents",
+            params={"page": page, "per_page": 100, "!status": "RESOLVED"}
+        )
+        response.raise_for_status()
+        incidents = response.json()
+
+        if not incidents:
+            break
+
+        for incident in incidents:
+            incident_id = incident["id"]
+            for component in incident.get("components", []):
+                component_id = component["id"]
+                print(f"Active incident found: incident_id={incident_id}, component_id={component_id}")
+                active_incident_map[component_id] = incident_id
+
+        if len(incidents) < 100:
+            break
+
+        page += 1
+
+    print(f"Total active incidents mapped: {len(active_incident_map)}")
+    return active_incident_map
+
 def instatus_monitoring(s3_bucket, s3_conf_file_key):
     output_path = "lidar/instatus-lidar-datatest.json"
     download_fileconf_from_s3(s3_bucket, s3_conf_file_key, output_path)
@@ -135,6 +171,8 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
         # Save component id and status on components_dict
         components_dict = {c["id"]: c["status"] for c in components_status}
 
+        active_incident_map = fetch_active_incidents(session, base_url_v1)
+
         with open(output_path, "r") as f:
             data = json.load(f)
 
@@ -147,7 +185,10 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
             x, y, z = map(int, address["xyz"].split(","))
             component_id = address["componentId"]
             address_tested = address["address"]
-            incident_id = address.get("incidentId", "")
+            incident_id = active_incident_map.get(component_id, None)
+
+            if incident_id is not None:
+                print(f"Current incident = {incident_id}")
 
             print(f"=============================================== \n"
                   f"Process monitoring on address={address_tested}")
