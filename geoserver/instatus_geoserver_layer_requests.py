@@ -72,3 +72,39 @@ def fetch_instatus_components_statuses(INSTATUS_PAGE_ID):
     components_status = response.json()
     components_dict = {c["id"]: c["status"] for c in components_status}
     return components_dict
+
+
+def fetch_active_incidents(INSTATUS_PAGE_ID):
+    """
+    Retrieve all active incidents (UNRESOLVED) and return
+    un dict { component_id: incident_id } for concerning component.
+    """
+    print("Fetching active incidents from Instatus ...")
+    active_incident_map = {}
+
+    page = 1
+    while True:
+        response = requests.get(
+            f"{INSTATUS_BASE_URL_V1}/{INSTATUS_PAGE_ID}/incidents",
+            params={"page": page, "per_page": 100, "!status": "RESOLVED"}
+        )
+        response.raise_for_status()
+        incidents = response.json()
+
+        if not incidents:
+            break
+
+        for incident in incidents:
+            incident_id = incident["id"]
+            for component in incident.get("components", []):
+                component_id = component["id"]
+                print(f"Active incident found: incident_id={incident_id}, component_id={component_id}")
+                active_incident_map[component_id] = incident_id
+
+        if len(incidents) < 100:
+            break
+
+        page += 1
+
+    print(f"Total active incidents mapped: {len(active_incident_map)}")
+    return active_incident_map

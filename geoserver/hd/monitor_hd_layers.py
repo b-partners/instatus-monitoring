@@ -3,7 +3,7 @@ import sys
 import json
 
 from geoserver.instatus_geoserver_layer_requests import fetch_instatus_components_statuses, create_instatus_incident, \
-    resolve_incident_and_update_component_status
+    resolve_incident_and_update_component_status, fetch_active_incidents
 from geoserver.is_image_corrupted import is_server_returning_incorrect_image
 from lidar.s3_conf import download_fileconf_from_s3, upload_config
 
@@ -11,6 +11,8 @@ INSTATUS_HD_LAYER_PAGE_ID=os.environ["INSTATUS_HD_LAYER_PAGE_ID"]
 
 def instatus_hd_layers_monitoring(testdata_file):
     components_statuses = fetch_instatus_components_statuses(INSTATUS_HD_LAYER_PAGE_ID)
+    active_incident_map = fetch_active_incidents(INSTATUS_HD_LAYER_PAGE_ID)
+
     with open(testdata_file, "r") as f:
         data = json.load(f)
 
@@ -21,11 +23,12 @@ def instatus_hd_layers_monitoring(testdata_file):
         url = item["url"]
         component_id = item["componentId"]
         address = item["address"]
-        incident_id = item["incidentId"]
+        incident_id = active_incident_map.get(component_id)
         layer = item["layer"]
 
         print(f"====================================================================== \n"
               f"Process monitoring on address={address}")
+        print(f"Component_id={component_id} has incident_id={incident_id}")
 
         if is_server_returning_incorrect_image(url):
             monitoring_failed = True
