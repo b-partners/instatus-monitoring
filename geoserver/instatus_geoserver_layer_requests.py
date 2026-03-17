@@ -86,7 +86,8 @@ def fetch_active_incidents(INSTATUS_PAGE_ID):
     while True:
         response = requests.get(
             f"{INSTATUS_BASE_URL_V1}/{INSTATUS_PAGE_ID}/incidents",
-            params={"page": page, "per_page": 100, "!status": "RESOLVED"}
+            params={"page": page, "per_page": 100, "!status": "RESOLVED"},
+            headers=authorization_headers
         )
         response.raise_for_status()
         incidents = response.json()
