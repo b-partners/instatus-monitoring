@@ -277,13 +277,6 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
             else:
                 print("No action required, Monitoring OK, Component OPERATIONAL.")
 
-        # Save json file and upload to s3 if incident was created / incident was resolved
-        if updated:
-            print("Update datatest on s3")
-            with open(output_path, "w") as f:
-                json.dump(data, f, indent=4)
-            upload_config(s3_bucket, s3_conf_file_key, output_path)
-
 if __name__ == '__main__':
     s3_bucket=sys.argv[1]
     s3_conf_file_key=sys.argv[2]

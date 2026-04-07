@@ -75,10 +75,7 @@ def instatus_hd_layers_monitoring(testdata_file):
 def monitor_hd_layers(s3_bucket, s3_conf_file_key):
     output_path = s3_conf_file_key
     download_fileconf_from_s3(s3_bucket, s3_conf_file_key, output_path)
-    is_updated, testdata_file= instatus_hd_layers_monitoring(output_path)
-
-    if is_updated:
-        upload_config(s3_bucket, s3_conf_file_key, testdata_file)
+    instatus_hd_layers_monitoring(output_path)
 
 if __name__ == '__main__':
     monitor_hd_layers(sys.argv[1], sys.argv[2])
