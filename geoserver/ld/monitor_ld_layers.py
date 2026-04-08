@@ -6,7 +6,7 @@ import json
 from geoserver.instatus_geoserver_layer_requests import fetch_instatus_components_statuses, create_instatus_incident, \
     resolve_incident_and_update_component_status, fetch_active_incidents
 from geoserver.is_image_corrupted import is_server_returning_incorrect_image
-from lidar.s3_conf import download_fileconf_from_s3, upload_config
+from lidar.s3_conf import download_fileconf_from_s3
 
 INSTATUS_LD_LAYER_PAGE_ID=os.environ["INSTATUS_LD_LAYER_PAGE_ID"]
 

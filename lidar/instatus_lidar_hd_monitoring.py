@@ -8,7 +8,7 @@ import requests
 import mercantile
 from pyproj import Transformer
 
-from s3_conf import download_fileconf_from_s3, upload_config
+from s3_conf import download_fileconf_from_s3
 
 
 LIDAR_BASE_URL = "https://api.stac.teledetection.fr/collections/lidarhd/items"
