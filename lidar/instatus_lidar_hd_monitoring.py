@@ -17,6 +17,54 @@ LIDAR_FALLBACK_BASE_URL = "https://data.geopf.fr/wfs/ows"
 INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
 INSTATUS_PAGE_ID = os.environ["INSTATUS_PAGE_ID"]
 
+def monitor_suisse_lidar(x, y, z):
+    STAC_URL = "https://data.geo.admin.ch/api/stac/v1/search"
+    COLLECTION = "ch.swisstopo.swisssurface3d"
+
+    print("Retrieve lidar download url on SUISSE URL ...")
+    try:
+        tile = [x, y, z]
+        bbox = mercantile.bounds(*tile)
+        minx, miny = bbox[0], bbox[1]
+        maxx, maxy = bbox[2], bbox[3]
+
+        parameters = {
+            "collections": COLLECTION,
+            "intersects": json.dumps(build_geojson_polygon(minx, miny, maxx, maxy))
+        }
+
+        print(build_geojson_polygon(minx, miny, maxx, maxy))
+        response = requests.get(STAC_URL, params=parameters)
+        response.raise_for_status()
+        data = response.json()
+
+        if "features" not in data:
+            return None
+
+        for feature in data["features"]:
+            assets = feature.get("assets", {})
+            for key, value in assets.items():
+                if key.endswith(".copc.laz"):
+                    href = value.get("href")
+                    if href:
+                        print(href)
+                        return href
+
+    except Exception as e:
+        print(e)
+
+def build_geojson_polygon(minx, miny, maxx, maxy):
+    return {
+        "type": "Polygon",
+        "coordinates": [[
+            [minx, miny],
+            [maxx, miny],
+            [maxx, maxy],
+            [minx, maxy],
+            [minx, miny],
+        ]]
+    }
+
 def monitor_lidar(x, y, z):
     print("Retrieve lidar download url on principal URL ...")
     try:
@@ -184,11 +232,12 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
             component_id = address["componentId"]
             address_tested = address["address"]
             incident_id = active_incident_map.get(component_id)
+            current_layer = address["layer"]
 
             print(f"=============================================== \n"
                   f"Process monitoring on address={address_tested}")
 
-            url = monitor_lidar(x, y, z)
+            url = monitor_suisse_lidar(x, y, z) if current_layer == "SUISSE" else monitor_lidar(x, y, z)
             is_downloadable = download_first_mb(url)
             print(f"is_downloadable={is_downloadable}")
 
