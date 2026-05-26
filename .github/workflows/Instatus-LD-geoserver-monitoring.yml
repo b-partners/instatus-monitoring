@@ -3,7 +3,7 @@ name: Monitor Geoserver LD layers
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '0 */2 * * *'
 
 jobs:
   monitor-ld-layers:

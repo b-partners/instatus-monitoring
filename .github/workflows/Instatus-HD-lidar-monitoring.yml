@@ -3,7 +3,7 @@ name: Lidar Monitoring
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '0 */2 * * *'
 
 jobs:
   monitor-HD-lidar:
