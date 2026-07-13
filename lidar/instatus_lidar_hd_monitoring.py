@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timezone
 import json
 import os
@@ -195,8 +196,37 @@ def fetch_active_incidents(session, base_url_v1):
     print(f"Total active incidents mapped: {len(active_incident_map)}")
     return active_incident_map
 
+def check_lidar_hash_validity(url, lidar_hash_ref):
+    if not url:
+        print("No LIDAR URL found.")
+        return False
+
+    h = hashlib.sha256()
+
+    print(f"Download for hash checking on : {url}")
+
+    try:
+        with requests.get(url, stream=True, timeout=120) as response:
+            response.raise_for_status()
+
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    h.update(chunk)
+
+    except requests.RequestException as e:
+        print(f"Unable to download lidar: {e}")
+        return False
+
+    calculated_hash = h.hexdigest()
+
+    print(f"Expected hash = {lidar_hash_ref}")
+    print(f"Actual hash = {calculated_hash}")
+
+    return calculated_hash == lidar_hash_ref
+
 def instatus_monitoring(s3_bucket, s3_conf_file_key):
     output_path = "lidar/instatus-lidar-datatest.json"
+    print("Downloading Lidar data from S3 bucket ...")
     download_fileconf_from_s3(s3_bucket, s3_conf_file_key, output_path)
 
     authorization_headers = {
@@ -233,12 +263,13 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
             address_tested = address["address"]
             incident_id = active_incident_map.get(component_id)
             current_layer = address["layer"]
+            lidar_hash = address.get("lidarHash", "")
 
             print(f"=============================================== \n"
                   f"Process monitoring on address={address_tested}")
 
             url = monitor_suisse_lidar(x, y, z) if current_layer == "SUISSE" else monitor_lidar(x, y, z)
-            is_downloadable = download_first_mb(url)
+            is_downloadable = check_lidar_hash_validity(url, lidar_hash)
             print(f"is_downloadable={is_downloadable}")
 
             if is_downloadable is False:
@@ -329,6 +360,4 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
 if __name__ == '__main__':
     s3_bucket=sys.argv[1]
     s3_conf_file_key=sys.argv[2]
-    # s3_bucket = "instatus-bucket"
-    # s3_conf_file_key = "lidar/instatus-lidar-datatest.json"
     instatus_monitoring(s3_bucket, s3_conf_file_key)
