@@ -269,7 +269,8 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
                   f"Process monitoring on address={address_tested}")
 
             url = monitor_suisse_lidar(x, y, z) if current_layer == "SUISSE" else monitor_lidar(x, y, z)
-            is_downloadable = check_lidar_hash_validity(url, lidar_hash)
+            is_downloadable = download_first_mb(url) if lidar_hash == "" else check_lidar_hash_validity(url, lidar_hash)
+
             print(f"is_downloadable={is_downloadable}")
 
             if is_downloadable is False:
