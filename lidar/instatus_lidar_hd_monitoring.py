@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 import json
 import os
 import sys
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 import requests
@@ -17,6 +19,22 @@ LIDAR_FALLBACK_BASE_URL = "https://data.geopf.fr/wfs/ows"
 
 INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
 INSTATUS_PAGE_ID = os.environ["INSTATUS_PAGE_ID"]
+
+
+def build_session(authorization_headers):
+    session = requests.Session()
+    session.headers.update(authorization_headers)
+
+    retries = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[502, 503, 504],
+        allowed_methods=["GET", "POST"],
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 def monitor_suisse_lidar(x, y, z):
     STAC_URL = "https://data.geo.admin.ch/api/stac/v1/search"
@@ -171,11 +189,16 @@ def fetch_active_incidents(session, base_url_v1):
 
     page = 1
     while True:
-        response = session.get(
-            f"{base_url_v1}/incidents",
-            params={"page": page, "per_page": 100, "!status": "RESOLVED"}
-        )
-        response.raise_for_status()
+        try:
+            response = session.get(
+                f"{base_url_v1}/incidents",
+                params={"page": page, "per_page": 100, "!status": "RESOLVED"}
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Unable to retrieve unresolved incidents: {e}")
+            continue
+
         incidents = response.json()
 
         if not incidents:
@@ -237,126 +260,139 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
     base_url_v1 = f"https://api.instatus.com/v1/{INSTATUS_PAGE_ID}"
     base_url_v2 = f"https://api.instatus.com/v2/{INSTATUS_PAGE_ID}"
 
-    with requests.Session() as session:
-        session.headers.update(authorization_headers)
+    session = build_session(authorization_headers)
 
-        # Retrieve all components statuses
-        print("Retrieve all component statuses ...")
-        response = session.get(f"{base_url_v2}/components?page=1&per_page=50")
-        response.raise_for_status()
-        components_status = response.json()
+    # Retrieve all components statuses
+    print("Retrieve all component statuses ...")
+    response = session.get(f"{base_url_v2}/components?page=1&per_page=50")
+    response.raise_for_status()
+    components_status = response.json()
 
-        # Save component id and status on components_dict
-        components_dict = {c["id"]: c["status"] for c in components_status}
-        active_incident_map = fetch_active_incidents(session, base_url_v1)
+    # Save component id and status on components_dict
+    components_dict = {c["id"]: c["status"] for c in components_status}
+    active_incident_map = fetch_active_incidents(session, base_url_v1)
 
-        with open(output_path, "r") as f:
-            data = json.load(f)
+    with open(output_path, "r") as f:
+        data = json.load(f)
 
-        updated = False
+    updated = False
 
-        for address in data:
-            monitoring_failed = False
+    for address in data:
+        monitoring_failed = False
 
-            x, y, z = map(int, address["xyz"].split(","))
-            component_id = address["componentId"]
-            address_tested = address["address"]
-            incident_id = active_incident_map.get(component_id)
-            current_layer = address["layer"]
-            lidar_hash = address.get("lidarHash", "")
+        x, y, z = map(int, address["xyz"].split(","))
+        component_id = address["componentId"]
+        address_tested = address["address"]
+        incident_id = active_incident_map.get(component_id)
+        current_layer = address["layer"]
+        lidar_hash = address.get("lidarHash", "")
 
-            print(f"=============================================== \n"
-                  f"Process monitoring on address={address_tested}")
+        print(f"=============================================== \n"
+              f"Process monitoring on address={address_tested}")
 
-            url = monitor_suisse_lidar(x, y, z) if current_layer == "SUISSE" else monitor_lidar(x, y, z)
-            is_downloadable = download_first_mb(url) if lidar_hash == "" else check_lidar_hash_validity(url, lidar_hash)
+        url = monitor_suisse_lidar(x, y, z) if current_layer == "SUISSE" else monitor_lidar(x, y, z)
+        is_downloadable = download_first_mb(url) if lidar_hash == "" else check_lidar_hash_validity(url, lidar_hash)
 
-            print(f"is_downloadable={is_downloadable}")
+        print(f"is_downloadable={is_downloadable}")
 
-            if is_downloadable is False:
-                monitoring_failed = True
+        if is_downloadable is False:
+            monitoring_failed = True
 
-            current_component_status = components_dict.get(component_id)
-            print(f"Current component status={current_component_status}")
-            print(f"Component_id={component_id} has incident_id={incident_id}")
+        current_component_status = components_dict.get(component_id)
+        print(f"Current component status={current_component_status}")
+        print(f"Component_id={component_id} has incident_id={incident_id}")
 
-            if not current_component_status:
-                print(f"Component {component_id} not found")
-                continue
+        if not current_component_status:
+            print(f"Component {component_id} not found")
+            continue
 
-            # ----------------------------------------------------------------
-            # CASE 1 : Monitoring KO + Component OPERATIONAL → Create incident
-            # ----------------------------------------------------------------
-            if current_component_status == "OPERATIONAL" and monitoring_failed:
-                print(f"[CREATE] Incident for {address_tested}")
+        # ----------------------------------------------------------------
+        # CASE 1 : Monitoring KO + Component OPERATIONAL → Create incident
+        # ----------------------------------------------------------------
+        if current_component_status == "OPERATIONAL" and monitoring_failed:
+            print(f"[CREATE] Incident for {address_tested}")
 
-                incident_body = {
-                    "name": f"Lidar unavailable on address {address_tested}",
-                    "message": "Lidar link is not available",
-                    "components": [component_id],
-                    "status": "INVESTIGATING",
-                    "notify": True,
-                    "statuses": [
-                        {
-                            "id": component_id,
-                            "status": "PARTIALOUTAGE"
-                        }
-                    ]
-                }
+            incident_body = {
+                "name": f"Lidar unavailable on address {address_tested}",
+                "message": "Lidar link is not available",
+                "components": [component_id],
+                "status": "INVESTIGATING",
+                "notify": True,
+                "statuses": [
+                    {
+                        "id": component_id,
+                        "status": "PARTIALOUTAGE"
+                    }
+                ]
+            }
 
+            try:
                 incident_response = session.post(
                     f"{base_url_v1}/incidents",
                     json=incident_body,
+                    timeout=120,
                 )
                 incident_response.raise_for_status()
 
                 new_incident_id = incident_response.json()["id"]
                 address["incidentId"] = new_incident_id
                 updated = True
-                print(f"Incident created, incident_id={new_incident_id}")
 
-            # ------------------------------------------------------------
-            # CASE 2 : Monitoring KO + Component already on PARTIALOUTAGE
-            # ------------------------------------------------------------
-            elif current_component_status == "PARTIALOUTAGE" and monitoring_failed:
-                print(f"[SKIP] {address_tested} already in PARTIALOUTAGE, incident is not created anymore")
+            except requests.exceptions.RequestException as e:
+                print(f"Unable to create incident: {e}")
+                continue
 
-            # ------------------------------------------------------------
-            # CAS 3 : Monitoring OK + Component PARTIALOUTAGE → Résolution
-            # ------------------------------------------------------------
-            elif current_component_status == "PARTIALOUTAGE" and not monitoring_failed and incident_id:
-                print(f"[RESOLVE] Incident {incident_id}")
+            new_incident_id = incident_response.json()["id"]
+            address["incidentId"] = new_incident_id
+            updated = True
+            print(f"Incident created, incident_id={new_incident_id}")
 
-                resolve_body = {
-                    "message": f"Lidar available on address={address_tested}",
-                    "components": [component_id],
-                    "started": datetime.now(timezone.utc).isoformat(),
-                    "status": "RESOLVED",
-                    "notify": True,
-                    "statuses": [
-                        {
-                            "id": component_id,
-                            "status": "OPERATIONAL"
-                        }
-                    ]
-                }
+        # ------------------------------------------------------------
+        # CASE 2 : Monitoring KO + Component already on PARTIALOUTAGE
+        # ------------------------------------------------------------
+        elif current_component_status == "PARTIALOUTAGE" and monitoring_failed:
+            print(f"[SKIP] {address_tested} already in PARTIALOUTAGE, incident is not created anymore")
 
-                # RESOLVE INCIDENT WITH INCIDENT-UPDATE ENDPOINT
-                session.post(
+        # ------------------------------------------------------------
+        # CAS 3 : Monitoring OK + Component PARTIALOUTAGE → Résolution
+        # ------------------------------------------------------------
+        elif current_component_status == "PARTIALOUTAGE" and not monitoring_failed and incident_id:
+            print(f"[RESOLVE] Incident {incident_id}")
+
+            resolve_body = {
+                "message": f"Lidar available on address={address_tested}",
+                "components": [component_id],
+                "started": datetime.now(timezone.utc).isoformat(),
+                "status": "RESOLVED",
+                "notify": True,
+                "statuses": [
+                    {
+                        "id": component_id,
+                        "status": "OPERATIONAL"
+                    }
+                ]
+            }
+
+            # RESOLVE INCIDENT WITH INCIDENT-UPDATE ENDPOINT
+            try:
+                response = session.post(
                     f"{base_url_v1}/incidents/{incident_id}/incident-updates",
                     json=resolve_body,
-                ).raise_for_status()
+                    timeout=30,
+                )
+                response.raise_for_status()
 
                 address["incidentId"] = None
                 updated = True
-
                 print("Incident resolved ...")
-
-            # ------------------------------------------------------------
-            # CAS 4 : Monitoring OK + Component OPERATIONAL → No action
-            # ------------------------------------------------------------
-            else:
-                print("No action required, Monitoring OK, Component OPERATIONAL.")
+            except requests.exceptions.RequestException as e:
+                print(f"Unable to resolve incident {incident_id}: {e}")
+                continue
+        # ------------------------------------------------------------
+        # CAS 4 : Monitoring OK + Component OPERATIONAL → No action
+        # ------------------------------------------------------------
+        else:
+            print("No action required, Monitoring OK, Component OPERATIONAL.")
 
 if __name__ == '__main__':
     s3_bucket=sys.argv[1]
