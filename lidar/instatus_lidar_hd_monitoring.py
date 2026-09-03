@@ -127,10 +127,10 @@ def retrieve_ign_lidar_from(x, y, z):
         "service": "WFS",
         "version": "2.0.0",
         "request": "GetFeature",
-        "typeNames": "IGNF_NUAGES-DE-POINTS-LIDAR-HD:bloc",
+        "typeNames": "IGNF_NUAGES-DE-POINTS-LIDAR-HD:dalle",
         "srsName": "EPSG:2154",
         "outputFormat": "application/json",
-        "bbox": f"{minx},{miny},{maxx},{maxy}"
+        "bbox": f"{minx},{miny},{maxx},{maxy},EPSG:2154"
     }
 
     response = requests.get(LIDAR_FALLBACK_BASE_URL, params=params)
