@@ -134,9 +134,10 @@ def retrieve_ign_lidar_from(x, y, z):
     }
 
     response = requests.get(LIDAR_FALLBACK_BASE_URL, params=params)
+    print(f"Fallback ign request url={response.url}")
     ign_feature_collection = requests.get(response.url).json()
     features = ign_feature_collection.get("features", [])
-    print(ign_feature_collection)
+    print(f"Fallback ign FeatureCollection={ign_feature_collection}")
     if features:
         lidar_url = features[0].get("properties", {}).get("url")
         print(f"LIDAR FALLBACK URL={lidar_url}")
