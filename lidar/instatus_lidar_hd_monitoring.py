@@ -133,9 +133,18 @@ def retrieve_ign_lidar_from(x, y, z):
         "bbox": f"{minx},{miny},{maxx},{maxy},EPSG:2154"
     }
 
-    response = requests.get(LIDAR_FALLBACK_BASE_URL, params=params)
-    print(f"Fallback ign request url={response.url}")
-    ign_feature_collection = requests.get(response.url).json()
+    try:
+        response = requests.get(LIDAR_FALLBACK_BASE_URL, params=params, timeout=10)
+        print(f"Fallback ign request url={response.url}")
+        response.raise_for_status()
+        ign_feature_collection = response.json()
+    except requests.exceptions.RequestException as e:
+        print("Fallback ign request failed:", type(e).__name__, e)
+        return None
+    except requests.exceptions.JSONDecodeError as e:
+        print("Fallback ign response was not valid JSON:", e)
+        return None
+
     features = ign_feature_collection.get("features", [])
     print(f"Fallback ign FeatureCollection={ign_feature_collection}")
     if features:
