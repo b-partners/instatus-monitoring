@@ -15,6 +15,7 @@ from s3_conf import download_fileconf_from_s3
 
 
 LIDAR_BASE_URL = "https://api.stac.teledetection.fr/collections/lidarhd/items"
+LIDAR_SCRAPING_BASE_URL = os.environ["LIDAR_SCRAPING_URL"]
 LIDAR_FALLBACK_BASE_URL = "https://data.geopf.fr/wfs/ows"
 
 INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
@@ -107,9 +108,41 @@ def monitor_lidar(x, y, z):
     except requests.exceptions.RequestException as e:
         print("Principal URL failed:", type(e).__name__, e)
 
-    print("Lidar not found on principal url, process fallback")
+    print("Lidar not found on principal url, process scraping fallback")
+
+    href = scrape_lidar_bbox(x, y, z)
+    if href:
+        return href
+
+    print("Lidar not found on scraping url, process ign fallback")
 
     return retrieve_ign_lidar_from(x, y, z)
+
+def scrape_lidar_bbox(x, y, z):
+    print("Retrieve lidar download url on scraping URL ...")
+    try:
+        tile = [x, y, z]
+        bbox = mercantile.bounds(*tile)
+        minx, miny = bbox[0], bbox[1]
+        maxx, maxy = bbox[2], bbox[3]
+        params = {"bbox": f"{minx},{miny},{maxx},{maxy}"}
+
+        print("Calling:", LIDAR_SCRAPING_BASE_URL)
+        response = requests.get(LIDAR_SCRAPING_BASE_URL, params=params, timeout=10)
+        print("HTTP Status:", response.status_code)
+        response.raise_for_status()
+        data = response.json()
+
+        tiles = data.get("tiles", [])
+        if tiles:
+            href = tiles[0]["url"]
+            print(f"LIDAR-SCRAPING={href}")
+            return href
+
+    except requests.exceptions.RequestException as e:
+        print("Scraping URL failed:", type(e).__name__, e)
+
+    return None
 
 def retrieve_ign_lidar_from(x, y, z):
     transformer = Transformer.from_crs("EPSG:4326", "EPSG:2154", always_xy=True)
