@@ -160,7 +160,7 @@ def retrieve_ign_lidar_from(x, y, z):
         "service": "WFS",
         "version": "2.0.0",
         "request": "GetFeature",
-        "typeNames": "IGNF_NUAGES-DE-POINTS-LIDAR-HD:dalle",
+        "typeNames": "IGNF_LIDAR-HD_METADONNEE:metadata",
         "srsName": "EPSG:2154",
         "outputFormat": "application/json",
         "bbox": f"{minx},{miny},{maxx},{maxy},EPSG:2154"
@@ -181,7 +181,7 @@ def retrieve_ign_lidar_from(x, y, z):
     features = ign_feature_collection.get("features", [])
     print(f"Fallback ign FeatureCollection={ign_feature_collection}")
     if features:
-        lidar_url = features[0].get("properties", {}).get("url")
+        lidar_url = features[0].get("properties", {}).get("url_npl")
         print(f"LIDAR FALLBACK URL={lidar_url}")
         return lidar_url
     return None
