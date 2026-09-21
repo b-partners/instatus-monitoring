@@ -85,7 +85,7 @@ def build_geojson_polygon(minx, miny, maxx, maxy):
         ]]
     }
 
-def monitor_lidar(x, y, z):
+def get_principal_lidar_url(x, y, z):
     print("Retrieve lidar download url on principal URL ...")
     try:
         tile = [x, y, z]
@@ -108,15 +108,36 @@ def monitor_lidar(x, y, z):
     except requests.exceptions.RequestException as e:
         print("Principal URL failed:", type(e).__name__, e)
 
-    print("Lidar not found on principal url, process scraping fallback")
+    return None
 
-    href = scrape_lidar_bbox(x, y, z)
-    if href:
-        return href
+def monitor_lidar(x, y, z, is_downloadable):
+    """
+    Try each lidar URL source in order (principal, scraping, IGN WFS fallback)
+    until one yields a URL that is actually downloadable. A source that
+    returns a URL but fails to download also triggers the next fallback.
+    """
+    sources = [
+        ("principal", lambda: get_principal_lidar_url(x, y, z)),
+        ("scraping", lambda: scrape_lidar_bbox(x, y, z)),
+        ("ign fallback", lambda: retrieve_ign_lidar_from(x, y, z)),
+    ]
 
-    print("Lidar not found on scraping url, process ign fallback")
+    last_url = None
 
-    return retrieve_ign_lidar_from(x, y, z)
+    for name, get_url in sources:
+        url = get_url()
+        last_url = url or last_url
+
+        if not url:
+            print(f"Lidar not found on {name} url, process next fallback")
+            continue
+
+        if is_downloadable(url):
+            return url, True
+
+        print(f"Lidar url from {name} source is not downloadable, process next fallback")
+
+    return last_url, False
 
 def scrape_lidar_bbox(x, y, z):
     print("Retrieve lidar download url on scraping URL ...")
@@ -333,8 +354,17 @@ def instatus_monitoring(s3_bucket, s3_conf_file_key):
         print(f"=============================================== \n"
               f"Process monitoring on address={address_tested}")
 
-        url = monitor_suisse_lidar(x, y, z) if current_layer == "SUISSE" else monitor_lidar(x, y, z)
-        is_downloadable = download_first_mb(url) if lidar_hash == "" else check_lidar_hash_validity(url, lidar_hash)
+        is_downloadable_fn = (
+            (lambda u: download_first_mb(u))
+            if lidar_hash == ""
+            else (lambda u: check_lidar_hash_validity(u, lidar_hash))
+        )
+
+        if current_layer == "SUISSE":
+            url = monitor_suisse_lidar(x, y, z)
+            is_downloadable = is_downloadable_fn(url)
+        else:
+            url, is_downloadable = monitor_lidar(x, y, z, is_downloadable_fn)
 
         print(f"is_downloadable={is_downloadable}")
 
