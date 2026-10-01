@@ -19,7 +19,7 @@ jobs:
       INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
       INSTATUS_3D_PAGE_ID: ${{ secrets.INSTATUS_3D_PAGE_ID }}
       # seules les 3D FAILED comptent, les UNAVAILABLE (pas de LiDAR) sont ignorees
-      THREED_SLA_COMPONENT_ID: cmmahc5as07eeij459mxmcw20
+      THREED_SLA_COMPONENT_ID: ${{ secrets.THREED_SLA_COMPONENT_ID }}
       THREED_API_URL: ${{ secrets.THREED_API_URL }}
       THREED_API_KEY: ${{ secrets.THREED_API_KEY }}
 
