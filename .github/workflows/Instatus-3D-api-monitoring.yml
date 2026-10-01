@@ -3,8 +3,8 @@ name: Monitor 3D API
 on:
   workflow_dispatch:
   schedule:
-    # chaque controle genere une 3D par zone (~1 a 2 min) : pas plus souvent que toutes les 30 min
-    - cron: '* */2 * * *'
+    # chaque controle genere une 3D par zone (~1 a 2 min) : toutes les 2h
+    - cron: '0 */2 * * *'
 
 concurrency:
   group: monitor-3d-api

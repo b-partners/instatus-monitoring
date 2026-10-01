@@ -25,6 +25,7 @@ import json
 import math
 import os
 import sys
+import threading
 import time
 import urllib.parse
 import uuid
@@ -55,6 +56,32 @@ DATASET_PATH = "threed/instatus-3d-datatest.json"
 
 def log(zone, message):
     print(f"{datetime.now(timezone.utc):%H:%M:%S} [{zone}] {message}", flush=True)
+
+
+def describe_state(data):
+    """'PROCESSING/UNKNOWN [GEOMETRY_CONSTRUCTION] (message)' a partir de la reponse de GET /3d/{id}."""
+    state = data.get("status") or {}
+    label = f"{state.get('progression') or '?'}/{state.get('health') or '?'}"
+    if data.get("step"):
+        label += f" [{data['step']}]"
+    return f"{label} ({state['message']})" if state.get("message") else label
+
+
+def format_timeline(history):
+    """'PENDING/UNKNOWN @10s -> PROCESSING/UNKNOWN @20s -> FINISHED/SUCCEEDED @85s'"""
+    return " -> ".join(f"{label} @{elapsed:.0f}s" for label, elapsed in history) or "-"
+
+
+class Progress:
+    """Compteur partage entre les threads : nombre de zones terminees sur le total."""
+
+    def __init__(self, total):
+        self.total, self.done, self.lock = total, 0, threading.Lock()
+
+    def finish(self, zone, status, message):
+        with self.lock:
+            self.done += 1
+            log(zone, f"[{self.done}/{self.total}] {status or 'SKIPPED'} : {message}")
 
 
 def build_session(headers=None):
@@ -100,8 +127,17 @@ def is_texture_available(url):
 
 # --------------------------------------------------------------------------- API 3D
 
-def check_3d(zone, session):
-    """Retourne (statut Instatus | None si la zone est ignoree, message, duree en s)."""
+def check_3d(zone, session, progress=None):
+    """Retourne (statut Instatus | None si la zone est ignoree, message, duree en s, historique des etats)."""
+    history = []
+    status, message, duration = run_3d(zone, session, history)
+    if progress:
+        progress.finish(zone["name"], status, message)
+    return status, message, duration, history
+
+
+def run_3d(zone, session, history):
+    """Lance la 3D d'une zone ; `history` recoit chaque changement d'etat (libelle, secondes depuis le lancement)."""
     name = zone["name"]
     tile_x, tile_y, zoom = zone["tile"]["x"], zone["tile"]["y"], zone["tile"]["z"]
     image_uri = texture_url(tile_x - 1, tile_y - 1, zoom)
@@ -110,7 +146,7 @@ def check_3d(zone, session):
         log(name, "[SKIP] texture IGN indisponible : la zone n'est pas testee")
         return None, "texture IGN indisponible", 0
 
-    city_json_id = str(uuid.uuid4())
+    city_json_id = f"instatus-{str(uuid.uuid4())}"
     body = {
         "id": city_json_id,
         "delimitationObjectType": "BUILDING_ROOF",
@@ -143,24 +179,31 @@ def check_3d(zone, session):
     data = {}
     while time.time() - start < TIMEOUT_S:
         time.sleep(POLL_DELAY_S)
+        elapsed = time.time() - start
         try:
             response = session.get(f"{THREED_API_URL}/3d/{city_json_id}", timeout=60)
         except requests.exceptions.RequestException as e:
-            log(name, f"GET /3d/{city_json_id} en echec : {type(e).__name__}")
+            log(name, f"GET /3d/{city_json_id} en echec : {type(e).__name__} ({elapsed:.0f}s)")
             continue
         data = response.json() if response.status_code == 200 else {}
         state = data.get("status") or {}
-        log(name, f"GET /3d/{city_json_id} -> HTTP {response.status_code} {state.get('progression')} "
-                  f"({time.time() - start:.0f}s)")
+        label = describe_state(data) if state else f"HTTP {response.status_code}"
+        if not history or history[-1][0] != label:
+            previous = history[-1][0] if history else "PUT"
+            history.append((label, elapsed))
+            log(name, f"[STATUS] {previous} -> {label} ({elapsed:.0f}s / {TIMEOUT_S}s)")
+        else:
+            log(name, f"[STATUS] {label} depuis {elapsed - history[-1][1]:.0f}s ({elapsed:.0f}s / {TIMEOUT_S}s)")
         if state.get("progression") not in (None, "PENDING", "PROCESSING"):
             break
     else:
-        return OUTAGE, f"3D non terminee apres {TIMEOUT_S}s (id {city_json_id})", time.time() - start
+        last = history[-1][0] if history else "aucune reponse"
+        return OUTAGE, f"3D non terminee apres {TIMEOUT_S}s, dernier etat {last} (id {city_json_id})", time.time() - start
 
     duration = time.time() - start
     state = data.get("status") or {}
     if state.get("health") != "SUCCEEDED":
-        return OUTAGE, (f"3D en echec (progression={state.get('progression')}, health={state.get('health')}, "
+        return OUTAGE, (f"3D en echec (progression={state.get('progression')}, health={state.get('health')}, step={data.get('step')}, "
                         f"message={state.get('message')}, id {city_json_id})"), duration
 
     files = data.get("cityJsonFileUrls") or []
@@ -205,7 +248,7 @@ def fetch_active_incidents(session, page_id):
 
 def aggregate_status(results):
     """Statut du composant 3D a partir des zones testees (les zones ignorees ne comptent pas)."""
-    tested = [status for status, _, _ in results if status]
+    tested = [status for status, *_ in results if status]
     failed = tested.count(OUTAGE)
     if not tested:
         return None
@@ -260,6 +303,20 @@ def update_instatus(session, page_id, component_id, status, message, current_sta
 
 # --------------------------------------------------------------------------- orchestration
 
+def write_step_summary(zones, results, status, message):
+    """Tableau des zones dans le resume du job GitHub Actions (sans effet en local)."""
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+    lines = [f"## 3D API : {status or 'UNKNOWN (no zone tested)'}", "", message, "",
+             "| Zone | Statut | Duree | Etats successifs | Detail |", "|---|---|---|---|---|"]
+    for zone, (s, detail, duration, history) in zip(zones, results):
+        cells = [zone["name"], s or "SKIPPED", f"{duration:.0f}s", format_timeline(history), detail]
+        lines.append("| " + " | ".join(c.replace("|", "\\|") for c in cells) + " |")
+    with open(summary_path, "a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 def instatus_3d_monitoring(dataset_path, dry_run=False, workers=4):
     with open(dataset_path, encoding="utf-8") as f:
         zones = json.load(f)
@@ -272,18 +329,21 @@ def instatus_3d_monitoring(dataset_path, dry_run=False, workers=4):
     api = build_session({"x-api-key": THREED_API_KEY, "Content-Type": "application/json"})
     print(f"Monitoring 3D API {THREED_API_URL} on {len(zones)} zone(s) from {dataset_path}, {workers} in parallel, "
           f"timeout {TIMEOUT_S}s, slow above {SLOW_S}s")
+    progress = Progress(len(zones))
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        results = list(pool.map(lambda z: check_3d(z, api), zones))
+        results = list(pool.map(lambda z: check_3d(z, api, progress), zones))
 
     print("==================== RESULTS")
-    for zone, (status, message, _) in zip(zones, results):
-        print(f"[{status or 'SKIPPED'}] {zone['name']} : {message}")
+    for zone, (status, message, duration, history) in zip(zones, results):
+        print(f"[{status or 'SKIPPED'}] {zone['name']} ({duration:.0f}s) : {message}")
+        print(f"    {format_timeline(history)}")
 
     status = aggregate_status(results)
-    problems = [f"{zone['name']} : {message}" for zone, (s, message, _) in zip(zones, results) if s and s != OPERATIONAL]
-    tested = sum(1 for s, _, _ in results if s)
+    problems = [f"{zone['name']} : {message}" for zone, (s, message, *_) in zip(zones, results) if s and s != OPERATIONAL]
+    tested = sum(1 for s, *_ in results if s)
     message = (f"{tested - len(problems)}/{tested} zone(s) OK" + (" | " + " | ".join(problems) if problems else ""))
     print(f"3D API status={status or 'UNKNOWN (no zone tested)'} : {message}")
+    write_step_summary(zones, results, status, message)
 
     if dry_run:
         print("--dry-run : Instatus is not updated")
