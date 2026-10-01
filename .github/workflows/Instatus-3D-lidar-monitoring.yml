@@ -1,0 +1,42 @@
+name: Monitor 3D LiDAR
+
+on:
+  workflow_dispatch:
+  schedule:
+    # un controle telecharge seulement le premier Mo du LiDAR de chaque zone du monitoring 3D
+    - cron: '*/30 * * * *'
+
+concurrency:
+  group: monitor-3d-lidar
+  cancel-in-progress: false
+
+jobs:
+  monitor-3d-lidar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
+      INSTATUS_3D_PAGE_ID: ${{ secrets.INSTATUS_3D_PAGE_ID }}
+      LIDAR_3D_COMPONENT_ID: ${{ secrets.LIDAR_3D_COMPONENT_ID }}
+      LIDAR_SCRAPING_URL: ${{ secrets.LIDAR_SCRAPING_URL }}
+
+    steps:
+      # les zones testees sont celles du monitoring 3D : threed/instatus-3d-datatest.json
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r lidar/requirements.txt -r threed/requirements.txt
+
+      - name: Monitor 3D LiDAR
+        run: |
+          export PYTHONPATH=$(pwd)
+          python threed/instatus_3d_lidar_monitoring.py
