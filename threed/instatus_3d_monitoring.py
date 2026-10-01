@@ -136,7 +136,7 @@ def check_3d(zone, session, progress=None):
     return status, message, duration, history
 
 
-def run_3d(zone, session, history):
+def run_3d(zone, session, history, city_json_id=None):
     """Lance la 3D d'une zone ; `history` recoit chaque changement d'etat (libelle, secondes depuis le lancement)."""
     name = zone["name"]
     tile_x, tile_y, zoom = zone["tile"]["x"], zone["tile"]["y"], zone["tile"]["z"]
@@ -146,7 +146,7 @@ def run_3d(zone, session, history):
         log(name, "[SKIP] texture IGN indisponible : la zone n'est pas testee")
         return None, "texture IGN indisponible", 0
 
-    city_json_id = f"instatus-{str(uuid.uuid4())}"
+    city_json_id = city_json_id or f"instatus-{str(uuid.uuid4())}"
     body = {
         "id": city_json_id,
         "delimitationObjectType": "BUILDING_ROOF",

@@ -1,0 +1,44 @@
+name: Monitor 3D SLA
+
+on:
+  workflow_dispatch:
+  schedule:
+    # chaque controle genere une 3D par zone (~1 a 2 min) : toutes les 2h, decale d'1h du monitoring de l'API 3D
+    - cron: '0 1-23/2 * * *'
+
+concurrency:
+  group: monitor-3d-sla
+  cancel-in-progress: false
+
+jobs:
+  monitor-3d-sla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      INSTATUS_API_KEY: ${{ secrets.INSTATUS_API_KEY }}
+      INSTATUS_3D_PAGE_ID: ${{ secrets.INSTATUS_3D_PAGE_ID }}
+      # seules les 3D FAILED comptent, les UNAVAILABLE (pas de LiDAR) sont ignorees
+      THREED_SLA_COMPONENT_ID: ${{ secrets.THREED_SLA_COMPONENT_ID }}
+      THREED_API_URL: ${{ secrets.THREED_API_URL }}
+      THREED_API_KEY: ${{ secrets.THREED_API_KEY }}
+
+    steps:
+      # les zones testees sont celles du monitoring 3D : threed/instatus-3d-datatest.json
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r threed/requirements.txt
+
+      - name: Monitor 3D SLA
+        run: |
+          export PYTHONPATH=$(pwd)
+          python threed/instatus_3d_sla_monitoring.py
