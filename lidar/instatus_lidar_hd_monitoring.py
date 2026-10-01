@@ -15,11 +15,11 @@ from s3_conf import download_fileconf_from_s3
 
 
 LIDAR_BASE_URL = "https://api.stac.teledetection.fr/collections/lidarhd/items"
-LIDAR_SCRAPING_BASE_URL = os.environ["LIDAR_SCRAPING_URL"]
+LIDAR_SCRAPING_BASE_URL = os.environ.get("LIDAR_SCRAPING_URL")
 LIDAR_FALLBACK_BASE_URL = "https://data.geopf.fr/wfs/ows"
 
-INSTATUS_API_KEY = os.environ["INSTATUS_API_KEY"]
-INSTATUS_PAGE_ID = os.environ["INSTATUS_PAGE_ID"]
+INSTATUS_API_KEY = os.environ.get("INSTATUS_API_KEY")
+INSTATUS_PAGE_ID = os.environ.get("INSTATUS_PAGE_ID")
 
 
 def build_session(authorization_headers):

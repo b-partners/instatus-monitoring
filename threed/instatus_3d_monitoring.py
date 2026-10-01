@@ -261,7 +261,7 @@ def aggregate_status(results):
     return OPERATIONAL
 
 
-def update_instatus(session, page_id, component_id, status, message, current_status, incident_id):
+def update_instatus(session, page_id, component_id, status, message, current_status, incident_id, name="3D API"):
     statuses = [{"id": component_id, "status": status}]
 
     # ---------------------------------------------------------------- OK -> resolution de l'incident ouvert
@@ -271,7 +271,7 @@ def update_instatus(session, page_id, component_id, status, message, current_sta
             return None
         print(f"[RESOLVE] incident {incident_id}")
         session.post(f"{INSTATUS_BASE_URL_V1}/{page_id}/incidents/{incident_id}/incident-updates", json={
-            "message": f"3D API available : {message}",
+            "message": f"{name} available : {message}",
             "started": datetime.now(timezone.utc).isoformat(),
             "components": [component_id], "status": "RESOLVED", "notify": True, "statuses": statuses,
         }).raise_for_status()
@@ -281,7 +281,7 @@ def update_instatus(session, page_id, component_id, status, message, current_sta
     if not incident_id:
         print(f"[CREATE] incident {status}")
         response = session.post(f"{INSTATUS_BASE_URL_V1}/{page_id}/incidents", json={
-            "name": f"3D API {'slow' if status == DEGRADED else 'unavailable'}",
+            "name": f"{name} {'slow' if status == DEGRADED else 'unavailable'}",
             "message": message,
             "components": [component_id], "status": "INVESTIGATING", "notify": True, "statuses": statuses,
         })
